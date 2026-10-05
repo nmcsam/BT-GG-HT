@@ -268,6 +268,10 @@ body.wide #cols>.page::before{content:attr(data-title);display:block;position:st
 body.wide .page.lock{overflow:hidden!important;}
 html.embed #home-screen{display:none!important;}
 html.embed #header{display:none!important;}
+/* Trong app chung: thanh tab cùng nền với nội dung bên dưới (tab chọn vẫn cam) */
+html.embed #tabs{background:#f5f5f5;border-bottom:1px solid #e0e6e4;}
+html.embed #tabs button{color:#0b3d35;}
+html.embed #tabs button.active{color:#fff;}
 html.embed #lock-screen{display:none!important;}
 html.embed #header>div:first-child,html.embed #header>.sub{display:none!important;}
 html.embed #header{padding:6px 12px 8px;}

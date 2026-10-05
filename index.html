@@ -25,12 +25,15 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidd
 #logo{width:30px;height:30px;border-radius:8px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.3);}
 #title{font-family:'Noto Serif','Times New Roman',Times,serif;font-weight:800;color:#fff;letter-spacing:.05em;font-size:clamp(13px,3.9vw,21px);line-height:1.2;white-space:nowrap;}
 #title .dot{color:#9fe0d2;margin:0 .2em;}
-#set-btn{flex-shrink:0;margin-left:4px;height:30px;padding:0 12px;border-radius:16px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.18);color:#e6f6f2;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;transition:all .3s;}
-#set-btn.on{background:linear-gradient(180deg,#fbbf24,#d97706);color:#fff;border-color:#fde68a;box-shadow:0 0 0 2px rgba(253,230,138,.45),0 0 14px rgba(251,191,36,.85);}
+#set-btn{flex-shrink:0;margin-left:4px;height:30px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;transition:all .3s;
+  background:linear-gradient(180deg,#fbbf24,#d97706);color:#fff;border:1px solid #fde68a;box-shadow:0 0 0 2px rgba(253,230,138,.35),0 0 10px rgba(251,191,36,.6);}
+#set-btn.on{background:linear-gradient(180deg,#4ade80,#16a34a);border-color:#bbf7d0;box-shadow:0 0 0 2px rgba(187,247,208,.4),0 0 12px rgba(74,222,128,.8);}
 #menu{display:flex;gap:6px;margin:7px auto 0;max-width:620px;}
 #menu button{flex:1;padding:8px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.18);color:#d7efe9;font-size:clamp(13px,3.6vw,15px);font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.15;}
 #menu button .ic{font-size:1.25em;}
 #menu button.on{background:linear-gradient(180deg,#d97706,#b45309);color:#fff;border-color:rgba(255,255,255,.7);box-shadow:0 2px 8px rgba(124,58,0,.45),0 1px 0 rgba(255,255,255,.35) inset;}
+#date-strip{display:none;flex-shrink:0;padding:12px 14px 8px;background:#076d5e;color:rgba(255,255,255,.8);font-size:12px;font-weight:600;}
+body.bothi #date-strip{display:block;}
 #frames{flex:1;min-height:0;position:relative;}
 #frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;visibility:hidden;background:#f5f5f5;}
 #frames iframe.on{visibility:visible;}
@@ -98,6 +101,7 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidd
     <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
   </div>
 </div>
+<div id="date-strip"></div>
 <div id="frames">
   <iframe id="f-bothi" title="Bố thí" src="bothi.html"></iframe>
   <iframe id="f-thien" title="Giữ giới - Hành thiền" src="thien.html" allow="autoplay; wake-lock; screen-wake-lock"></iframe>
@@ -105,7 +109,7 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidd
 
 <div id="set" onclick="if(event.target===this)closeSet()">
   <div class="box">
-    <h2><span>⚙ Cài đặt <small id="ver">· BT.GG.HT v2</small></span><button class="x" onclick="closeSet()">✕</button></h2>
+    <h2><span>⚙ Cài đặt <small id="ver">· BT.GG.HT v3</small></span><button class="x" onclick="closeSet()">✕</button></h2>
 
     <div class="sec">
       <h3>☁️ Đồng bộ nhiều thiết bị</h3>
@@ -176,10 +180,20 @@ window.shellToast=shellToast;
 function go(k){
   if(k!=='bothi'&&k!=='thien') k='bothi';
   ['bothi','thien'].forEach(x=>{ $('f-'+x).classList.toggle('on',x===k); $('m-'+x).classList.toggle('on',x===k); });
+  document.body.classList.toggle('bothi',k==='bothi'); refreshDate();
   try{ localStorage.setItem('btgght_tab',k); history.replaceState(null,'','#'+k); }catch(e){}
   // Khung vừa hiện: báo cho app bên trong vẽ lại theo kích thước
   setTimeout(()=>{ try{ W(k).dispatchEvent(new Event('resize')); }catch(e){} },30);
 }
+// Ngày dương + âm lịch (âm lịch lấy từ phần Thiền)
+function refreshDate(){
+  const d=new Date(), wd=['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
+  let txt=wd+', '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+  try{ const w=W('thien'); if(w&&typeof w.lunarLabelKey==='function'&&typeof w.getDK==='function') txt+=' · '+w.lunarLabelKey(w.getDK()); }catch(e){}
+  $('date-strip').textContent=txt;
+}
+setInterval(refreshDate,60000);
+$('f-thien').addEventListener('load',()=>setTimeout(refreshDate,300));
 let start=(location.hash||'').slice(1);
 if(start!=='bothi'&&start!=='thien'){ try{ start=localStorage.getItem('btgght_tab')||'bothi'; }catch(e){ start='bothi'; } }
 go(start);
@@ -196,9 +210,10 @@ showLock();
 
 // ── Nút Cài đặt sáng lên khi đang đồng bộ ──
 function refreshGlow(){
-  const a=st('bothi'), b=st('thien'), on=!!((a&&a.sync)||(b&&b.sync));
+  // Xanh lá: cả Bố thí và Thiền đều đã kết nối đồng bộ. Vàng: còn phần chưa kết nối.
+  const a=st('bothi'), b=st('thien'), A=!!(a&&a.sync), B=!!(b&&b.sync), on=A&&B;
   $('set-btn').classList.toggle('on',on);
-  $('set-btn').title=on?'Đang đồng bộ':'Cài đặt (chưa đồng bộ)';
+  $('set-btn').title=on?'Đã kết nối đồng bộ (Bố thí + Thiền)':'Chưa kết nối đủ — Bố thí: '+(A?'đã':'chưa')+', Thiền: '+(B?'đã':'chưa');
 }
 setInterval(refreshGlow,2000); setTimeout(refreshGlow,1500);
 

@@ -795,15 +795,15 @@ function globalSave(){
   try{ renderAll(); }catch(e){}
   toast('✓ Đã lưu dữ liệu');
 }
-function getUserName(){ return (ST.userName&&String(ST.userName).trim()) || 'Nguyễn Hồng Sâm'; }
+function getUserName(){ return (ST.userName&&String(ST.userName).trim()) || ''; }
 function applyUserName(){
   const n=getUserName();
-  const a=document.getElementById('app-name-text'); if(a) a.textContent=n;
-  const h=document.getElementById('home-name'); if(h) h.textContent=n;
-  try{ document.title=n; }catch(e){}
+  const a=document.getElementById('app-name-text'); if(a) a.textContent=n||'Nhật ký thiền';
+  const h=document.getElementById('home-name'); if(h) h.textContent=n||'Nhật ký thiền';
+  try{ document.title=n||'Nhật ký thiền'; }catch(e){}
 }
 function editUserName(){
-  const n=prompt('Tên hiển thị trên app:', getUserName());
+  const n=prompt('Tên của bạn (ghi trong báo cáo thiền):', getUserName());
   if(n && n.trim()){ ST.userName=n.trim(); save(); applyUserName(); toast('✓ Đã đổi tên'); }
 }
 function enterApp(){
@@ -2146,6 +2146,7 @@ function copyDayReport(){
     if(ga!==gb) return ga-gb;
     return (a.s||'99:99').localeCompare(b.s||'99:99');
   });
+  if(!getUserName()){ const nn=prompt('Tên của bạn (ghi trong báo cáo thiền):',''); if(!nn||!nn.trim()) return; ST.userName=nn.trim(); save(); applyUserName(); }
   const _name=getUserName();
   const _dstr=_ddmmyyyy(currentDayKey);
   const _deMuc=(ST.deMuc&&String(ST.deMuc).trim())||'Kāsina Ánh sáng';
@@ -3706,6 +3707,8 @@ function bkRestore(day){
 // INIT
 if(document.documentElement.classList.contains('embed')){ const _t=toast; toast=function(m){ try{ if(parent&&parent.shellToast){ parent.shellToast(m); return; } }catch(e){} _t(m); }; }
 load();
+// Dữ liệu thiền có từ trước khi tên thành 'riêng từng người' → giữ tên cũ trong báo cáo
+if(!ST.userName && Array.isArray(ST.data) && ST.data.length){ ST.userName='Nguyễn Hồng Sâm'; try{ save(); }catch(e){} }
 checkMonthReset();
 if(!ST.mgoals)ST.mgoals={};
 document.getElementById('goal1-input').value=getG1(calYear,calMonth);

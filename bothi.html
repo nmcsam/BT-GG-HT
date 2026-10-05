@@ -1784,6 +1784,7 @@ let _lastWH=window.innerWidth+'x'+window.innerHeight;
 try{ new ResizeObserver(()=>{ const k=window.innerWidth+'x'+window.innerHeight; if(k!==_lastWH){ _lastWH=k; window.dispatchEvent(new Event('resize')); } }).observe(document.documentElement); }catch(e){}
 window.addEventListener('resize',()=>{ clearTimeout(_fitT); _fitT=setTimeout(()=>{ const was=_wide; fitScreen(); setTabsH(); if(_wide&&!was) renderAll(); else if(_wide||curTab==='thien') renderThienChart(); },150); });
 // Trong app chung: thông báo hiện ở app chung (luôn thấy, kể cả khi đang ở trang khác)
+if(document.documentElement.classList.contains('embed')){ getPass=function(){ return ''; }; getPassT=function(){ return 0; }; mergePass=function(){ return null; }; }
 if(document.documentElement.classList.contains('embed')){ const _t=toast; toast=function(m){ try{ if(parent&&parent.shellToast){ parent.shellToast(m); return; } }catch(e){} _t(m); }; }
 load();
 cleanupData();

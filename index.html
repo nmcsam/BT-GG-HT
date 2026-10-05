@@ -131,7 +131,7 @@ body.bothi #date-strip{display:block;}
       <div class="it" id="it-bt">
         <button class="hd" onclick="sec('bt')"><span class="ic">🪷</span><span class="nm">Đồng bộ Bố thí</span><span class="vl" id="v-bt"></span><span class="ch">›</span></button>
         <div class="bd">
-          <div class="hint">Hai chiều — cả nhà nhập cùng một mã.</div>
+          <div class="hint">Sổ CHUNG cả nhà — mọi người nhập cùng một mã, ghi ở đâu cũng cập nhật cho tất cả.</div>
           <div class="fld"><input class="in" id="bt-code" maxlength="14" placeholder="Mã đồng bộ"/><button class="dice" title="Tạo mã mới" onclick="genCode('bt-code')">🎲</button></div>
           <div class="row"><button class="btn p" onclick="btConnect()">✓ Kết nối</button><button class="btn red" onclick="btDisconnect()">Ngắt</button></div>
           <div class="st" id="bt-st"></div>
@@ -141,7 +141,7 @@ body.bothi #date-strip{display:block;}
       <div class="it" id="it-th">
         <button class="hd" onclick="sec('th')"><span class="ic">🧘</span><span class="nm">Đồng bộ Thiền</span><span class="vl" id="v-th"></span><span class="ch">›</span></button>
         <div class="bd">
-          <div class="hint">Điện thoại ghi và đẩy lên · máy tính chỉ tải về xem.</div>
+          <div class="hint">RIÊNG từng người — mỗi người một mã. Điện thoại ghi và đẩy lên · máy tính chỉ tải về xem.</div>
           <div class="fld"><input class="in" id="th-code" maxlength="14" placeholder="Mã đồng bộ thiền"/><button class="dice" title="Tạo mã mới" onclick="genCode('th-code')">🎲</button></div>
           <div class="seg"><button id="role-push" onclick="thRole('push')">📱 Điện thoại</button><button id="role-pull" onclick="thRole('pull')">💻 Máy tính</button></div>
           <div class="row"><button class="btn p" onclick="thConnect()">✓ Kết nối</button><button class="btn" id="th-pull-row" onclick="thPull()">⬇ Tải về</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
@@ -149,10 +149,14 @@ body.bothi #date-strip{display:block;}
         </div>
       </div>
 
+      <div class="it" id="it-nm">
+        <button class="hd" onclick="nameEdit()"><span class="ic">👤</span><span class="nm">Tên của bạn</span><span class="vl" id="v-nm"></span><span class="ch">›</span></button>
+      </div>
+
       <div class="it" id="it-pw">
         <button class="hd" onclick="sec('pw')"><span class="ic">🔒</span><span class="nm">Mật khẩu mở app</span><span class="vl" id="v-pw"></span><span class="ch">›</span></button>
         <div class="bd">
-          <div class="hint">Một mật khẩu cho cả app, tự áp dụng cho các máy cùng mã Bố thí.</div>
+          <div class="hint">Mật khẩu RIÊNG của bạn — tự áp dụng cho các máy của bạn (cùng mã Thiền).</div>
           <div class="row"><button class="btn p" id="pw-set" onclick="pwSet()">Đặt mật khẩu</button><button class="btn red" id="pw-off" onclick="pwOff()">Tắt</button></div>
           <div class="st" id="pw-st" style="display:none"></div>
         </div>
@@ -180,7 +184,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v5</div>
+    <div class="foot" id="ver">BT.GG.HT v6 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -216,9 +220,27 @@ let start=(location.hash||'').slice(1);
 if(start!=='bothi'&&start!=='thien'){ try{ start=localStorage.getItem('btgght_tab')||'bothi'; }catch(e){ start='bothi'; } }
 go(start);
 
-// ── Mật khẩu chung (dùng mật khẩu của phần Bố thí — được đồng bộ giữa các máy) ──
+// ── Mật khẩu RIÊNG từng người (không đi theo sổ Bố thí chung của cả nhà) ──
+// Lưu trên máy; đồng bộ giữa các máy của CHÍNH người đó qua mã Thiền riêng (tài liệu '<mã thiền>-PASS').
 function hashPass(p){ let h=5381; for(let i=0;i<p.length;i++){ h=((h<<5)+h+p.charCodeAt(i))|0; } return 'h'+h; }
-function getPass(){ try{ return localStorage.getItem('cd_pass')||''; }catch(e){ return ''; } }
+function getPass(){ try{ return localStorage.getItem('btgght_pass')||''; }catch(e){ return ''; } }
+function getPassT(){ try{ return parseInt(localStorage.getItem('btgght_pass_t')||'0',10)||0; }catch(e){ return 0; } }
+function setPass(h,t){ try{ if(h) localStorage.setItem('btgght_pass',h); else localStorage.removeItem('btgght_pass'); localStorage.setItem('btgght_pass_t',String(t||Date.now())); }catch(e){} }
+// Máy đã đặt mật khẩu ở bản trước (mật khẩu Bố thí) → giữ nguyên làm mật khẩu riêng
+try{ if(localStorage.getItem('btgght_pass_t')===null && localStorage.getItem('cd_pass')) setPass(localStorage.getItem('cd_pass'), parseInt(localStorage.getItem('cd_pass_t')||'1',10)||1); }catch(e){}
+function syncPass(){
+  try{
+    const b=st('thien'), w=W('thien'); if(!b||!b.code||!w||!w.initFirebase||!w.initFirebase()) return;
+    const ref=w.fbDb.collection('syncs').doc(b.code+'-PASS');
+    ref.get().then(doc=>{
+      const r=doc.exists?doc.data():null, rt=(r&&r.t)||0, lt=getPassT();
+      if(r&&rt>lt){ setPass(r.h||'',rt); if(typeof refreshSet==='function') refreshSet(); }
+      else if(lt>rt) ref.set({h:getPass(),t:lt});
+    }).catch(()=>{});
+  }catch(e){}
+}
+$('f-thien').addEventListener('load',()=>setTimeout(syncPass,2500));
+setInterval(syncPass,300000);
 function showLock(){ if(!getPass()) return; $('lock-in').value=''; $('lock-in').name='k'+Date.now(); $('lock').style.display='flex'; setTimeout(()=>$('lock-in').focus(),200); }
 function unlock(){
   if(hashPass($('lock-in').value||'')===getPass()){ $('lock').style.display='none'; $('lock-err').textContent=''; }
@@ -259,6 +281,7 @@ function refreshSet(){
   const on=!!getPass();
   $('pw-st').className='st '+(on?'ok':'no'); $('pw-st').textContent=on?'Đang BẬT — app hỏi mật khẩu mỗi khi mở.':'Đang tắt — ai cũng mở được app.';
   $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
+  try{ const nm=W('thien').getUserName(); $('v-nm').textContent=nm||'Chưa đặt'; $('v-nm').className='vl'+(nm?' ok':''); }catch(e){}
   $('v-pw').textContent=on?'✓ Đang bật':'Tắt'; $('v-pw').className='vl'+(on?' ok':'');
   const f=(a&&a.bkFreq)||'off';
   document.querySelectorAll('#bk-freq button').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
@@ -279,8 +302,23 @@ function thConnect(){ const c=$('th-code').value.trim().toUpperCase(); if(!c){ s
 function thDisconnect(){ call('thien','disconnectSync'); after(300); }
 function thPull(){ call('thien','pullFromCloud'); after(2000); }
 // Mật khẩu (dùng hộp nhập của phần Bố thí → được đồng bộ)
-function pwSet(){ call('bothi','setPassFlow'); after(200); }
-function pwOff(){ call('bothi','clearPassFlow'); after(200); }
+function pwSet(){
+  const cur=getPass();
+  if(cur){ const old=prompt('Nhập mật khẩu hiện tại:'); if(old===null) return; if(hashPass(old)!==cur){ shellToast('✗ Sai mật khẩu'); return; } }
+  const p1=prompt(cur?'Mật khẩu mới (ít nhất 4 ký tự):':'Đặt mật khẩu (ít nhất 4 ký tự):'); if(p1===null) return;
+  if(p1.length<4){ shellToast('Mật khẩu cần ít nhất 4 ký tự'); return; }
+  const p2=prompt('Nhập lại mật khẩu:'); if(p2===null) return;
+  if(p2!==p1){ shellToast('✗ Hai lần nhập không khớp'); return; }
+  setPass(hashPass(p1),Date.now()); syncPass(); refreshSet(); shellToast('✓ Đã đặt mật khẩu');
+}
+function pwOff(){
+  const cur=getPass(); if(!cur) return;
+  const old=prompt('Nhập mật khẩu hiện tại để tắt:'); if(old===null) return;
+  if(hashPass(old)!==cur){ shellToast('✗ Sai mật khẩu'); return; }
+  setPass('',Date.now()); syncPass(); refreshSet(); shellToast('✓ Đã tắt mật khẩu');
+}
+// Tên trong báo cáo thiền (riêng từng người)
+function nameEdit(){ call('thien','editUserName'); after(300); }
 // Sao lưu: áp dụng cho cả hai phần
 function bkFreq(f){ call('bothi','bkSetFreq',f); call('thien','bkSetFreq',f); after(200); shellToast('Sao lưu định kỳ: '+{off:'tắt',d:'hàng ngày',w:'hàng tuần',m:'hàng tháng'}[f]); }
 function bkNow(){ call('bothi','bkNow',true); const b=st('thien'); if(b&&b.role!=='pull') setTimeout(()=>call('thien','bkNow',true),1200); after(2500); }

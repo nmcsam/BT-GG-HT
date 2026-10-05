@@ -53,32 +53,48 @@ body.bothi #date-strip{display:block;}
 #lock-in{width:min(240px,80vw);padding:12px 14px;font-size:20px;text-align:center;border:none;border-radius:12px;background:#fff;color:#111;letter-spacing:6px;-webkit-text-security:disc;text-security:disc;outline:none;}
 #lock button{width:min(240px,80vw);padding:12px;border:none;border-radius:12px;background:linear-gradient(180deg,#d97706,#b45309);color:#fff;font-size:15px;font-weight:800;cursor:pointer;}
 #lock-err{font-size:12.5px;color:#ffd1c8;min-height:16px;}
-/* Cài đặt chung */
-#set{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);align-items:flex-start;justify-content:center;padding:calc(10px + env(safe-area-inset-top)) 10px 10px;overflow-y:auto;}
+/* Cài đặt chung — dạng danh sách gọn: mỗi mục 1 dòng (trạng thái bên phải), chạm để mở */
+#set{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.45);align-items:flex-start;justify-content:center;padding:calc(10px + env(safe-area-inset-top)) 10px 10px;overflow-y:auto;}
 #set.on{display:flex;}
-#set .box{background:#f7fbfa;border-radius:18px;width:100%;max-width:560px;padding:14px 14px 16px;box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:20px;}
-#set h2{display:flex;align-items:center;justify-content:space-between;font-size:18px;color:var(--teal-d);margin-bottom:10px;}
-#set h2 small{font-size:11px;color:var(--muted);font-weight:600;}
-#set .x{width:34px;height:34px;border-radius:50%;border:none;background:#cdeee7;color:var(--teal-d);font-size:15px;font-weight:800;cursor:pointer;}
-.sec{background:linear-gradient(180deg,#fff 0%,#f4fbf9 100%);border:1px solid #cfe5df;border-radius:14px;padding:12px;margin-bottom:10px;}
-.sec>h3{font-size:14px;color:var(--teal-d);margin-bottom:8px;}
-.sub{border-top:1px dashed #cfe5df;padding-top:9px;margin-top:9px;}
-.sub:first-of-type{border-top:none;padding-top:0;margin-top:0;}
-.lbl{font-size:12.5px;font-weight:800;color:var(--teal);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
-.hint{font-size:12px;color:var(--muted);line-height:1.45;margin:4px 0 6px;}
-.st{font-size:12.5px;font-weight:700;margin:6px 0 2px;}
-.st.ok{color:#2e7d32;} .st.no{color:#9a6b2f;}
-.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.row>*{flex:1;}
-.in{width:100%;padding:9px 10px;border:1.5px solid #9fd0c4;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#fff;color:var(--ink);outline:none;}
-.btn{padding:9px 8px;border:1px solid #9fd0c4;border-radius:10px;background:#e0f4f1;color:var(--teal-d);font-size:13px;font-weight:800;cursor:pointer;min-width:0;}
+#set .box{background:#f5f5f5;border-radius:18px;width:100%;max-width:460px;padding:12px 12px 10px;box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:20px;}
+#set h2{display:flex;align-items:center;justify-content:space-between;font-size:17px;color:var(--teal-d);margin:2px 2px 10px;}
+#set .x{width:32px;height:32px;border-radius:50%;border:none;background:#e3efec;color:var(--teal-d);font-size:14px;font-weight:800;cursor:pointer;}
+.list{background:#fff;border:1px solid #e0e6e4;border-radius:14px;overflow:hidden;}
+.it{border-top:1px solid #edf1f0;}
+.it:first-child{border-top:none;}
+.it>.hd{display:flex;align-items:center;gap:10px;width:100%;padding:12px 12px;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;}
+.it>.hd .ic{font-size:19px;width:24px;text-align:center;flex-shrink:0;}
+.it>.hd .nm{flex:1;font-size:14.5px;font-weight:700;color:var(--ink);}
+.it>.hd .vl{font-size:12.5px;font-weight:700;color:#9a6b2f;text-align:right;max-width:52%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.it>.hd .vl.ok{color:#15803d;}
+.it>.hd .ch{color:#b5c4c0;font-size:16px;transition:transform .2s;}
+.it.open>.hd{background:#f2faf8;}
+.it.open>.hd .ch{transform:rotate(90deg);}
+.it>.bd{display:none;padding:2px 12px 12px 46px;background:#f2faf8;}
+.it.open>.bd{display:block;}
+.hint{font-size:11.5px;color:var(--muted);line-height:1.4;margin:0 0 7px;}
+.fld{position:relative;}
+.in{width:100%;padding:8px 40px 8px 10px;border:1.5px solid #b9dcd4;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#fff;color:var(--ink);outline:none;}
+.in:focus{border-color:var(--teal);}
+.dice{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:32px;height:30px;border:none;background:none;font-size:17px;cursor:pointer;}
+.row{display:flex;gap:6px;margin-top:7px;}
+.btn{flex:1;white-space:nowrap;padding:8px 6px;border:1px solid #b9dcd4;border-radius:9px;background:#fff;color:var(--teal-d);font-size:12.5px;font-weight:800;cursor:pointer;min-width:0;}
 .btn.p{background:var(--teal);color:#fff;border-color:var(--teal);}
-.btn.sel{background:linear-gradient(180deg,#d97706,#b45309);color:#fff;border-color:#b45309;}
-.btn.red{background:#fff;color:#c62828;border-color:#f3b8b0;}
-.bk-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #e3efec;font-size:13px;}
+.btn.red{color:#c62828;border-color:#f3c2bc;}
+.seg{display:flex;margin-top:7px;border:1px solid #b9dcd4;border-radius:10px;overflow:hidden;background:#fff;}
+.seg button{flex:1;padding:7px 4px;border:none;border-left:1px solid #d6e9e4;background:none;color:var(--teal-d);font-size:12.5px;font-weight:700;cursor:pointer;}
+.seg button:first-child{border-left:none;}
+.seg button.sel{background:linear-gradient(180deg,#d97706,#b45309);color:#fff;}
+.st{font-size:11.5px;font-weight:700;margin-top:6px;color:#9a6b2f;}
+.st.ok{color:#15803d;}
+.grp{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.grp .gl{width:72px;flex-shrink:0;font-size:12.5px;font-weight:700;color:var(--teal-d);}
+.grp .btn{padding:7px 4px;}
+.bk-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid #dcebe7;font-size:12.5px;}
 .bk-item span{flex:1;}
-.bk-item button{flex:none;}
-#set .close{width:100%;margin-top:4px;padding:11px;border:none;border-radius:12px;background:#cdeee7;color:var(--teal-d);font-size:14px;font-weight:800;cursor:pointer;}
+.bk-item .btn{flex:none;padding:5px 10px;}
+.bk-h{font-size:12px;font-weight:800;color:var(--teal);margin-top:8px;}
+#set .foot{text-align:center;font-size:11px;color:#9aa9a6;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -109,60 +125,62 @@ body.bothi #date-strip{display:block;}
 
 <div id="set" onclick="if(event.target===this)closeSet()">
   <div class="box">
-    <h2><span>⚙ Cài đặt <small id="ver">· BT.GG.HT v4</small></span><button class="x" onclick="closeSet()">✕</button></h2>
+    <h2><span>⚙ Cài đặt</span><button class="x" onclick="closeSet()">✕</button></h2>
+    <div class="list">
 
-    <div class="sec">
-      <h3>☁️ Đồng bộ nhiều thiết bị</h3>
-      <div class="sub">
-        <div class="lbl">🪷 Bố thí <span style="font-weight:600;color:var(--muted)">· hai chiều, cả nhà dùng chung</span></div>
-        <div class="hint">Nhập cùng một mã trên mọi máy: ghi ở máy nào thì các máy khác cũng cập nhật.</div>
-        <input class="in" id="bt-code" maxlength="14" placeholder="VD: SAM2026CD"/>
-        <div class="row"><button class="btn" onclick="genCode('bt-code')">🎲 Tạo mã mới</button><button class="btn p" onclick="btConnect()">✓ Kết nối</button><button class="btn red" onclick="btDisconnect()">Ngắt</button></div>
-        <div class="st" id="bt-st"></div>
+      <div class="it" id="it-bt">
+        <button class="hd" onclick="sec('bt')"><span class="ic">🪷</span><span class="nm">Đồng bộ Bố thí</span><span class="vl" id="v-bt"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint">Hai chiều — cả nhà nhập cùng một mã.</div>
+          <div class="fld"><input class="in" id="bt-code" maxlength="14" placeholder="Mã đồng bộ"/><button class="dice" title="Tạo mã mới" onclick="genCode('bt-code')">🎲</button></div>
+          <div class="row"><button class="btn p" onclick="btConnect()">✓ Kết nối</button><button class="btn red" onclick="btDisconnect()">Ngắt</button></div>
+          <div class="st" id="bt-st"></div>
+        </div>
       </div>
-      <div class="sub">
-        <div class="lbl">🧘 Giữ giới - Hành thiền</div>
-        <div class="hint">Điện thoại ghi và tự đẩy lên; máy tính chỉ tải về để xem.</div>
-        <input class="in" id="th-code" maxlength="14" placeholder="Mã đồng bộ thiền"/>
-        <div class="row"><button class="btn" id="role-push" onclick="thRole('push')">📱 Điện thoại · đẩy lên</button><button class="btn" id="role-pull" onclick="thRole('pull')">💻 Máy tính · chỉ xem</button></div>
-        <div class="row"><button class="btn" onclick="genCode('th-code')">🎲 Tạo mã mới</button><button class="btn p" onclick="thConnect()">✓ Kết nối</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
-        <div class="row" id="th-pull-row"><button class="btn p" onclick="thPull()">⬇ Tải dữ liệu thiền mới nhất về</button></div>
-        <div class="st" id="th-st"></div>
+
+      <div class="it" id="it-th">
+        <button class="hd" onclick="sec('th')"><span class="ic">🧘</span><span class="nm">Đồng bộ Thiền</span><span class="vl" id="v-th"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint">Điện thoại ghi và đẩy lên · máy tính chỉ tải về xem.</div>
+          <div class="fld"><input class="in" id="th-code" maxlength="14" placeholder="Mã đồng bộ thiền"/><button class="dice" title="Tạo mã mới" onclick="genCode('th-code')">🎲</button></div>
+          <div class="seg"><button id="role-push" onclick="thRole('push')">📱 Điện thoại</button><button id="role-pull" onclick="thRole('pull')">💻 Máy tính</button></div>
+          <div class="row"><button class="btn p" onclick="thConnect()">✓ Kết nối</button><button class="btn" id="th-pull-row" onclick="thPull()">⬇ Tải về</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
+          <div class="st" id="th-st"></div>
+        </div>
       </div>
+
+      <div class="it" id="it-pw">
+        <button class="hd" onclick="sec('pw')"><span class="ic">🔒</span><span class="nm">Mật khẩu mở app</span><span class="vl" id="v-pw"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint">Một mật khẩu cho cả app, tự áp dụng cho các máy cùng mã Bố thí.</div>
+          <div class="row"><button class="btn p" id="pw-set" onclick="pwSet()">Đặt mật khẩu</button><button class="btn red" id="pw-off" onclick="pwOff()">Tắt</button></div>
+          <div class="st" id="pw-st" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="it" id="it-bk">
+        <button class="hd" onclick="sec('bk')"><span class="ic">💾</span><span class="nm">Sao lưu lên đám mây</span><span class="vl" id="v-bk"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint">Tự lưu bản chụp cả Bố thí và Thiền (giữ 4 bản gần nhất).</div>
+          <div class="seg" id="bk-freq"><button data-f="off" onclick="bkFreq('off')">Tắt</button><button data-f="d" onclick="bkFreq('d')">Ngày</button><button data-f="w" onclick="bkFreq('w')">Tuần</button><button data-f="m" onclick="bkFreq('m')">Tháng</button></div>
+          <div class="row"><button class="btn p" onclick="bkNow()">💾 Sao lưu ngay</button><button class="btn" onclick="bkList()">🕘 Bản sao lưu</button></div>
+          <div class="st" id="bk-st"></div>
+          <div id="bk-list"></div>
+        </div>
+      </div>
+
+      <div class="it" id="it-io">
+        <button class="hd" onclick="sec('io')"><span class="ic">📤</span><span class="nm">Xuất / Nhập dữ liệu</span><span class="vl"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint">📄 JSON, 📊 Excel: xuất ra file · 📥 Nhập: lấy lại từ file JSON.</div>
+          <div class="grp"><span class="gl">🪷 Bố thí</span><button class="btn" onclick="call('bothi','exportJSON')">📄 JSON</button><button class="btn" onclick="call('bothi','exportExcel')">📊 Excel</button><button class="btn" onclick="pickImport('bothi')">📥 Nhập</button></div>
+          <div class="grp"><span class="gl">🧘 Thiền</span><button class="btn" onclick="call('thien','exportData')">📄 JSON</button><button class="btn" style="visibility:hidden"></button><button class="btn" onclick="pickImport('thien')">📥 Nhập</button></div>
+          <input type="file" id="imp-file" accept=".json,application/json" style="display:none" onchange="doImport(this)"/>
+        </div>
+      </div>
+
     </div>
-
-    <div class="sec">
-      <h3>🔒 Mật khẩu mở app</h3>
-      <div class="hint">Một mật khẩu chung cho cả app. Đang bật đồng bộ Bố thí thì đặt/đổi/tắt ở máy nào, các máy khác cũng đổi theo.</div>
-      <div class="st" id="pw-st"></div>
-      <div class="row"><button class="btn p" id="pw-set" onclick="pwSet()">Đặt mật khẩu</button><button class="btn red" id="pw-off" onclick="pwOff()">Tắt mật khẩu</button></div>
-    </div>
-
-    <div class="sec">
-      <h3>💾 Sao lưu định kỳ lên đám mây</h3>
-      <div class="hint">Tự lưu một bản chụp dữ liệu (giữ 4 bản gần nhất) cho cả Bố thí và Thiền. Cần đang bật đồng bộ.</div>
-      <div class="row" id="bk-freq">
-        <button class="btn" data-f="off" onclick="bkFreq('off')">Tắt</button><button class="btn" data-f="d" onclick="bkFreq('d')">Ngày</button><button class="btn" data-f="w" onclick="bkFreq('w')">Tuần</button><button class="btn" data-f="m" onclick="bkFreq('m')">Tháng</button>
-      </div>
-      <div class="hint" id="bk-st"></div>
-      <div class="row"><button class="btn p" onclick="bkNow()">💾 Sao lưu ngay</button><button class="btn" onclick="bkList()">🕘 Bản sao lưu</button></div>
-      <div id="bk-list"></div>
-    </div>
-
-    <div class="sec">
-      <h3>📤 Xuất / Nhập dữ liệu</h3>
-      <div class="sub">
-        <div class="lbl">🪷 Bố thí</div>
-        <div class="row"><button class="btn" onclick="call('bothi','exportJSON')">📄 Xuất JSON</button><button class="btn" onclick="call('bothi','exportExcel')">📊 Xuất Excel</button><button class="btn" onclick="pickImport('bothi')">📥 Nhập JSON</button></div>
-      </div>
-      <div class="sub">
-        <div class="lbl">🧘 Giữ giới - Hành thiền</div>
-        <div class="row"><button class="btn" onclick="call('thien','exportData')">📄 Xuất JSON</button><button class="btn" onclick="pickImport('thien')">📥 Nhập JSON</button></div>
-      </div>
-      <input type="file" id="imp-file" accept=".json,application/json" style="display:none" onchange="doImport(this)"/>
-    </div>
-
-    <button class="close" onclick="closeSet()">Đóng</button>
+    <div class="foot" id="ver">BT.GG.HT v5</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -218,7 +236,9 @@ function refreshGlow(){
 setInterval(refreshGlow,2000); setTimeout(refreshGlow,1500);
 
 // ── Bảng Cài đặt chung ──
-function openSet(){ refreshSet(); $('bk-list').innerHTML=''; $('set').classList.add('on'); }
+function openSet(){ refreshSet(); $('bk-list').innerHTML=''; document.querySelectorAll('#set .it').forEach(x=>x.classList.remove('open')); $('set').classList.add('on'); }
+// Chỉ mở một mục mỗi lúc
+function sec(k){ const it=$('it-'+k), open=!it.classList.contains('open'); document.querySelectorAll('#set .it').forEach(x=>x.classList.remove('open')); if(open) it.classList.add('open'); refreshSet(); }
 function closeSet(){ $('set').classList.remove('on'); }
 function refreshSet(){
   const a=st('bothi'), b=st('thien');
@@ -230,15 +250,22 @@ function refreshSet(){
   const role=b&&b.role;
   $('th-st').textContent=b?((b.sync||(b.code&&role==='pull'))?('✓ '+(role==='pull'?'Máy tính · chỉ tải về':'Điện thoại · tự đẩy lên')+' — mã '+b.code):'Chưa kết nối'):'Đang tải…';
   $('role-push').classList.toggle('sel',role==='push'); $('role-pull').classList.toggle('sel',role==='pull');
-  $('th-pull-row').style.display=role==='pull'?'flex':'none';
+  $('th-pull-row').style.display=role==='pull'?'':'none';
+  // Tóm tắt bên phải mỗi dòng
+  const vbt=$('v-bt'), vth=$('v-th');
+  vbt.textContent=a?(a.sync?'✓ '+a.code:'Chưa kết nối'):'…'; vbt.className='vl'+(a&&a.sync?' ok':'');
+  const thOn=!!(b&&(b.sync||(b.code&&role==='pull')));
+  vth.textContent=b?(thOn?'✓ '+(role==='pull'?'💻 ':'📱 ')+b.code:'Chưa kết nối'):'…'; vth.className='vl'+(thOn?' ok':'');
   const on=!!getPass();
   $('pw-st').className='st '+(on?'ok':'no'); $('pw-st').textContent=on?'Đang BẬT — app hỏi mật khẩu mỗi khi mở.':'Đang tắt — ai cũng mở được app.';
   $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
+  $('v-pw').textContent=on?'✓ Đang bật':'Tắt'; $('v-pw').className='vl'+(on?' ok':'');
   const f=(a&&a.bkFreq)||'off';
-  document.querySelectorAll('#bk-freq .btn').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
+  document.querySelectorAll('#bk-freq button').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
   const lab={off:'đang tắt',d:'hàng ngày',w:'hàng tuần',m:'hàng tháng'}[f];
-  const t=x=>x?new Date(x).toLocaleString('vi-VN'):'chưa có';
-  $('bk-st').textContent='Chu kỳ: '+lab+' · Lần gần nhất — Bố thí: '+t(a&&a.bkLast)+' · Thiền: '+t(b&&b.bkLast);
+  const t=x=>x?new Date(x).toLocaleDateString('vi-VN'):'chưa có';
+  $('bk-st').textContent='Lần gần nhất · Bố thí: '+t(a&&a.bkLast)+' · Thiền: '+t(b&&b.bkLast); $('bk-st').className='st';
+  $('v-bk').textContent=f==='off'?'Tắt':'✓ '+lab.charAt(0).toUpperCase()+lab.slice(1); $('v-bk').className='vl'+(f!=='off'?' ok':'');
   refreshGlow();
 }
 function after(ms){ setTimeout(refreshSet,ms); }
@@ -267,7 +294,7 @@ function bkList(){
     return w.bkDocRef().get().then(doc=>{
       const sn=(doc.exists&&doc.data().snapshots)||{}, ks=Object.keys(sn).sort().reverse();
       if(!ks.length) return '<div class="hint">'+name+': chưa có bản sao lưu</div>';
-      return '<div class="lbl" style="margin-top:8px">'+name+'</div>'+ks.map(d=>'<div class="bk-item"><span>📅 '+d+'</span><button class="btn" onclick="bkRestore(\''+k+'\',\''+d+'\')">Khôi phục</button></div>').join('');
+      return '<div class="bk-h">'+name+'</div>'+ks.map(d=>'<div class="bk-item"><span>📅 '+d+'</span><button class="btn" onclick="bkRestore(\''+k+'\',\''+d+'\')">Khôi phục</button></div>').join('');
     }).catch(e=>'<div class="hint">'+name+': lỗi '+(e&&e.message||e)+'</div>');
   })).then(h=>{ box.innerHTML=h.join(''); });
 }

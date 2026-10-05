@@ -39,11 +39,19 @@ body.bothi #date-strip{display:block;}
 #frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;visibility:hidden;background:#f5f5f5;}
 #frames iframe.on{visibility:visible;}
 @media (max-width:560px){
-  #top{grid-template-columns:1fr auto;grid-template-areas:"bar bar" "menu set";row-gap:12px;column-gap:6px;}
-  #title{font-size:clamp(13px,calc((100vw - 84px) / 18),30px);}
+  /* Màn hình hẹp: tiêu đề + nút ⚙ tròn trên 1 hàng; 2 trình đơn trên 1 hàng mỏng, không xuống dòng */
+  #top{grid-template-columns:1fr auto;grid-template-areas:"bar set" "menu menu";row-gap:10px;column-gap:6px;padding:calc(10px + env(safe-area-inset-top)) 10px 9px;}
+  #bar{justify-content:flex-start;gap:8px;}
   #logo{width:30px;height:30px;}
-  #set-btn{height:100%;min-height:38px;padding:0 10px;border-radius:12px;font-size:12.5px;}
+  #title{font-size:clamp(13px,calc((100vw - 116px) / 17.3),30px);}
+  #set-btn{width:36px;height:36px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  #set-btn .t{display:none;}
+  #set-btn .g{font-size:19px;line-height:1;}
+  #menu{gap:6px;}
+  #menu button{padding:7px 4px;border-radius:10px;font-size:clamp(12px,3.35vw,15px);white-space:nowrap;gap:4px;}
+  #menu button .ic{font-size:1.1em;}
 }
+
 /* Màn hình ngang rộng (máy tính, Z Fold ngang): tiêu đề · Cài đặt · trình đơn trên một hàng */
 @media (orientation:landscape) and (min-width:680px){
   #top{grid-template-columns:auto auto 1fr;grid-template-areas:"bar set menu";row-gap:0;column-gap:14px;padding-top:calc(7px + env(safe-area-inset-top));padding-bottom:7px;}
@@ -120,7 +128,7 @@ body.bothi #date-strip{display:block;}
     <img id="logo" src="icon-med2-192.png" alt=""/>
     <div id="title">BỐ THÍ<span class="dot">·</span>GIỮ GIỚI<span class="dot">·</span>HÀNH THIỀN</div>
   </div>
-  <button id="set-btn" onclick="openSet()" title="Cài đặt">⚙ Cài đặt</button>
+  <button id="set-btn" onclick="openSet()" title="Cài đặt"><span class="g">⚙</span><span class="t"> Cài đặt</span></button>
   <div id="menu">
     <button id="m-bothi" onclick="go('bothi')"><span class="ic">🪷</span>Bố thí</button>
     <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
@@ -193,7 +201,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v7 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v8 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>

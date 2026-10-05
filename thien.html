@@ -56,6 +56,14 @@ html.embed #sync-btn,html.embed #settings-btn{display:none!important}
 /* Trong app chung: ẩn tên trên thanh đầu (tên vẫn dùng trong mẫu báo cáo thiền gửi Sư) */
 html.embed .app-name{display:none!important}
 html.embed .app-date{font-size:12px;font-weight:600}
+/* Thanh tab giống hệt phần Bố thí: nền xanh ngọc, biểu tượng + chữ cùng hàng, tab chọn màu cam */
+html.embed .nav{background:#076d5e;border-bottom:2px solid #0b3d35;}
+html.embed .nav-btn{flex:1;flex-direction:row;justify-content:center;align-items:center;gap:0;padding:11px 0;background:transparent;color:#d7efe9;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:0;box-shadow:none;cursor:pointer;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:700;line-height:normal;}
+html.embed .nav-btn svg{display:none;}
+html.embed .nav-btn:nth-child(1)::before{content:'🌸 ';white-space:pre;}
+html.embed .nav-btn:nth-child(2)::before{content:'📅 ';white-space:pre;}
+html.embed .nav-btn:nth-child(3)::before{content:'📊 ';white-space:pre;}
+html.embed .nav-btn.on{background:linear-gradient(180deg,#d97706 0%,#b45309 100%);color:#fff;font-weight:700;border-bottom:2px solid #7c3a00;box-shadow:0 2px 6px rgba(124,58,0,.4);text-shadow:0 1px 1px rgba(0,0,0,.25);}
 html.embed #lock-screen{display:none!important}
 #chart-pie{max-width:100%;max-height:100%}
 /* ── Màn hình ngang & rộng (máy tính, Z Fold xoay ngang): Hôm nay · Tháng · Năm cạnh nhau, mỗi cột 1/3 ── */

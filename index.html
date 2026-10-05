@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#076d5e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="BT.GG.HT"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-med2-192.png">
+<link rel="icon" type="image/png" href="icon-med2-192.png">
+<title>BT.GG.HT</title>
+<style>
+/* BT.GG.HT — Bố thí · Giữ giới · Hành thiền
+   Trang chung: 1 nút Cài đặt, 1 mật khẩu; 2 trình đơn mở 2 phần (bothi.html, thien.html) trong khung riêng. */
+:root{--teal:#076d5e;--teal-d:#0b3d35;--teal-l:#e0f4f1;--orange:#d97706;--orange-d:#b45309;--ink:#1a1a2e;--muted:#5f7f79;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;background:#f5f5f5;color:var(--ink);font-family:-apple-system,'Segoe UI',Arial,sans-serif;}
+#top{flex-shrink:0;padding:calc(6px + env(safe-area-inset-top)) 10px 8px;background:linear-gradient(135deg,#0b3d35,#076d5e 60%,#0e7f6e);box-shadow:0 3px 12px rgba(0,0,0,.25);position:relative;z-index:2;}
+#bar{display:flex;align-items:center;justify-content:center;gap:8px;}
+#logo{width:30px;height:30px;border-radius:8px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+#title{font-family:'Noto Serif','Times New Roman',Times,serif;font-weight:800;color:#fff;letter-spacing:.05em;font-size:clamp(13px,3.9vw,21px);line-height:1.2;white-space:nowrap;}
+#title .dot{color:#9fe0d2;margin:0 .2em;}
+#set-btn{flex-shrink:0;margin-left:4px;height:30px;padding:0 12px;border-radius:16px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.18);color:#e6f6f2;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;transition:all .3s;}
+#set-btn.on{background:linear-gradient(180deg,#fbbf24,#d97706);color:#fff;border-color:#fde68a;box-shadow:0 0 0 2px rgba(253,230,138,.45),0 0 14px rgba(251,191,36,.85);}
+#menu{display:flex;gap:6px;margin:7px auto 0;max-width:620px;}
+#menu button{flex:1;padding:8px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.18);color:#d7efe9;font-size:clamp(13px,3.6vw,15px);font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.15;}
+#menu button .ic{font-size:1.25em;}
+#menu button.on{background:linear-gradient(180deg,#d97706,#b45309);color:#fff;border-color:rgba(255,255,255,.7);box-shadow:0 2px 8px rgba(124,58,0,.45),0 1px 0 rgba(255,255,255,.35) inset;}
+#frames{flex:1;min-height:0;position:relative;}
+#frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;visibility:hidden;background:#f5f5f5;}
+#frames iframe.on{visibility:visible;}
+@media (orientation:landscape) and (min-width:680px){
+  #top{display:flex;align-items:center;gap:14px;padding-top:calc(5px + env(safe-area-inset-top));padding-bottom:5px;}
+  #title{font-size:clamp(14px,1.7vw,20px);}
+  #menu{margin:0 0 0 auto;max-width:520px;flex:1;}
+  #menu button{padding:6px;}
+}
+/* Thông báo */
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:#0b3d35;color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:900;max-width:88vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3);}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+/* Khóa */
+#lock{display:none;position:fixed;inset:0;z-index:800;background:linear-gradient(170deg,#0b3d35,#076d5e 55%,#0a4a40);flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;}
+#lock img{width:84px;height:84px;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+#lock .t{font-size:17px;font-weight:700;color:#fff;}
+#lock-in{width:min(240px,80vw);padding:12px 14px;font-size:20px;text-align:center;border:none;border-radius:12px;background:#fff;color:#111;letter-spacing:6px;-webkit-text-security:disc;text-security:disc;outline:none;}
+#lock button{width:min(240px,80vw);padding:12px;border:none;border-radius:12px;background:linear-gradient(180deg,#d97706,#b45309);color:#fff;font-size:15px;font-weight:800;cursor:pointer;}
+#lock-err{font-size:12.5px;color:#ffd1c8;min-height:16px;}
+/* Cài đặt chung */
+#set{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);align-items:flex-start;justify-content:center;padding:calc(10px + env(safe-area-inset-top)) 10px 10px;overflow-y:auto;}
+#set.on{display:flex;}
+#set .box{background:#f7fbfa;border-radius:18px;width:100%;max-width:560px;padding:14px 14px 16px;box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:20px;}
+#set h2{display:flex;align-items:center;justify-content:space-between;font-size:18px;color:var(--teal-d);margin-bottom:10px;}
+#set h2 small{font-size:11px;color:var(--muted);font-weight:600;}
+#set .x{width:34px;height:34px;border-radius:50%;border:none;background:#cdeee7;color:var(--teal-d);font-size:15px;font-weight:800;cursor:pointer;}
+.sec{background:linear-gradient(180deg,#fff 0%,#f4fbf9 100%);border:1px solid #cfe5df;border-radius:14px;padding:12px;margin-bottom:10px;}
+.sec>h3{font-size:14px;color:var(--teal-d);margin-bottom:8px;}
+.sub{border-top:1px dashed #cfe5df;padding-top:9px;margin-top:9px;}
+.sub:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+.lbl{font-size:12.5px;font-weight:800;color:var(--teal);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.hint{font-size:12px;color:var(--muted);line-height:1.45;margin:4px 0 6px;}
+.st{font-size:12.5px;font-weight:700;margin:6px 0 2px;}
+.st.ok{color:#2e7d32;} .st.no{color:#9a6b2f;}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.row>*{flex:1;}
+.in{width:100%;padding:9px 10px;border:1.5px solid #9fd0c4;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#fff;color:var(--ink);outline:none;}
+.btn{padding:9px 8px;border:1px solid #9fd0c4;border-radius:10px;background:#e0f4f1;color:var(--teal-d);font-size:13px;font-weight:800;cursor:pointer;min-width:0;}
+.btn.p{background:var(--teal);color:#fff;border-color:var(--teal);}
+.btn.sel{background:linear-gradient(180deg,#d97706,#b45309);color:#fff;border-color:#b45309;}
+.btn.red{background:#fff;color:#c62828;border-color:#f3b8b0;}
+.bk-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #e3efec;font-size:13px;}
+.bk-item span{flex:1;}
+.bk-item button{flex:none;}
+#set .close{width:100%;margin-top:4px;padding:11px;border:none;border-radius:12px;background:#cdeee7;color:var(--teal-d);font-size:14px;font-weight:800;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="lock">
+  <img src="icon-med2-192.png" alt=""/>
+  <div class="t">Nhập mật khẩu để mở app</div>
+  <input type="text" id="lock-in" name="bk-k" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" onkeydown="if(event.key==='Enter')unlock()"/>
+  <button onclick="unlock()">Mở khóa</button>
+  <div id="lock-err"></div>
+</div>
+
+<div id="top">
+  <div id="bar">
+    <img id="logo" src="icon-med2-192.png" alt=""/>
+    <div id="title">BỐ THÍ<span class="dot">·</span>GIỮ GIỚI<span class="dot">·</span>HÀNH THIỀN</div>
+    <button id="set-btn" onclick="openSet()" title="Cài đặt">⚙ Cài đặt</button>
+  </div>
+  <div id="menu">
+    <button id="m-bothi" onclick="go('bothi')"><span class="ic">🪷</span>Bố thí</button>
+    <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
+  </div>
+</div>
+<div id="frames">
+  <iframe id="f-bothi" title="Bố thí" src="bothi.html"></iframe>
+  <iframe id="f-thien" title="Giữ giới - Hành thiền" src="thien.html" allow="autoplay; wake-lock; screen-wake-lock"></iframe>
+</div>
+
+<div id="set" onclick="if(event.target===this)closeSet()">
+  <div class="box">
+    <h2><span>⚙ Cài đặt <small id="ver">· BT.GG.HT v1</small></span><button class="x" onclick="closeSet()">✕</button></h2>
+
+    <div class="sec">
+      <h3>☁️ Đồng bộ nhiều thiết bị</h3>
+      <div class="sub">
+        <div class="lbl">🪷 Bố thí <span style="font-weight:600;color:var(--muted)">· hai chiều, cả nhà dùng chung</span></div>
+        <div class="hint">Nhập cùng một mã trên mọi máy: ghi ở máy nào thì các máy khác cũng cập nhật.</div>
+        <input class="in" id="bt-code" maxlength="14" placeholder="VD: SAM2026CD"/>
+        <div class="row"><button class="btn" onclick="genCode('bt-code')">🎲 Tạo mã mới</button><button class="btn p" onclick="btConnect()">✓ Kết nối</button><button class="btn red" onclick="btDisconnect()">Ngắt</button></div>
+        <div class="st" id="bt-st"></div>
+      </div>
+      <div class="sub">
+        <div class="lbl">🧘 Giữ giới - Hành thiền</div>
+        <div class="hint">Điện thoại ghi và tự đẩy lên; máy tính chỉ tải về để xem.</div>
+        <input class="in" id="th-code" maxlength="14" placeholder="Mã đồng bộ thiền"/>
+        <div class="row"><button class="btn" id="role-push" onclick="thRole('push')">📱 Điện thoại · đẩy lên</button><button class="btn" id="role-pull" onclick="thRole('pull')">💻 Máy tính · chỉ xem</button></div>
+        <div class="row"><button class="btn" onclick="genCode('th-code')">🎲 Tạo mã mới</button><button class="btn p" onclick="thConnect()">✓ Kết nối</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
+        <div class="row" id="th-pull-row"><button class="btn p" onclick="thPull()">⬇ Tải dữ liệu thiền mới nhất về</button></div>
+        <div class="st" id="th-st"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>🔒 Mật khẩu mở app</h3>
+      <div class="hint">Một mật khẩu chung cho cả app. Đang bật đồng bộ Bố thí thì đặt/đổi/tắt ở máy nào, các máy khác cũng đổi theo.</div>
+      <div class="st" id="pw-st"></div>
+      <div class="row"><button class="btn p" id="pw-set" onclick="pwSet()">Đặt mật khẩu</button><button class="btn red" id="pw-off" onclick="pwOff()">Tắt mật khẩu</button></div>
+    </div>
+
+    <div class="sec">
+      <h3>💾 Sao lưu định kỳ lên đám mây</h3>
+      <div class="hint">Tự lưu một bản chụp dữ liệu (giữ 4 bản gần nhất) cho cả Bố thí và Thiền. Cần đang bật đồng bộ.</div>
+      <div class="row" id="bk-freq">
+        <button class="btn" data-f="off" onclick="bkFreq('off')">Tắt</button><button class="btn" data-f="d" onclick="bkFreq('d')">Ngày</button><button class="btn" data-f="w" onclick="bkFreq('w')">Tuần</button><button class="btn" data-f="m" onclick="bkFreq('m')">Tháng</button>
+      </div>
+      <div class="hint" id="bk-st"></div>
+      <div class="row"><button class="btn p" onclick="bkNow()">💾 Sao lưu ngay</button><button class="btn" onclick="bkList()">🕘 Bản sao lưu</button></div>
+      <div id="bk-list"></div>
+    </div>
+
+    <div class="sec">
+      <h3>📤 Xuất / Nhập dữ liệu</h3>
+      <div class="sub">
+        <div class="lbl">🪷 Bố thí</div>
+        <div class="row"><button class="btn" onclick="call('bothi','exportJSON')">📄 Xuất JSON</button><button class="btn" onclick="call('bothi','exportExcel')">📊 Xuất Excel</button><button class="btn" onclick="pickImport('bothi')">📥 Nhập JSON</button></div>
+      </div>
+      <div class="sub">
+        <div class="lbl">🧘 Giữ giới - Hành thiền</div>
+        <div class="row"><button class="btn" onclick="call('thien','exportData')">📄 Xuất JSON</button><button class="btn" onclick="pickImport('thien')">📥 Nhập JSON</button></div>
+      </div>
+      <input type="file" id="imp-file" accept=".json,application/json" style="display:none" onchange="doImport(this)"/>
+    </div>
+
+    <button class="close" onclick="closeSet()">Đóng</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── Tiện ích ──
+function $(id){ return document.getElementById(id); }
+function W(k){ const f=$('f-'+k); return f&&f.contentWindow; }
+function st(k){ try{ const w=W(k); return (w&&typeof w.__state==='function')?w.__state():null; }catch(e){ return null; } }
+function call(k,fn){ const w=W(k); if(!w||typeof w[fn]!=='function'){ shellToast('Phần '+(k==='bothi'?'Bố thí':'Thiền')+' đang tải, thử lại sau giây lát'); return; } try{ return w[fn].apply(w,[].slice.call(arguments,2)); }catch(e){ shellToast('Lỗi: '+(e&&e.message||e)); } }
+function shellToast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(shellToast._t); shellToast._t=setTimeout(()=>t.classList.remove('on'),2800); }
+window.shellToast=shellToast;
+
+// ── Chuyển trình đơn ──
+function go(k){
+  if(k!=='bothi'&&k!=='thien') k='bothi';
+  ['bothi','thien'].forEach(x=>{ $('f-'+x).classList.toggle('on',x===k); $('m-'+x).classList.toggle('on',x===k); });
+  try{ localStorage.setItem('btgght_tab',k); history.replaceState(null,'','#'+k); }catch(e){}
+  // Khung vừa hiện: báo cho app bên trong vẽ lại theo kích thước
+  setTimeout(()=>{ try{ W(k).dispatchEvent(new Event('resize')); }catch(e){} },30);
+}
+let start=(location.hash||'').slice(1);
+if(start!=='bothi'&&start!=='thien'){ try{ start=localStorage.getItem('btgght_tab')||'bothi'; }catch(e){ start='bothi'; } }
+go(start);
+
+// ── Mật khẩu chung (dùng mật khẩu của phần Bố thí — được đồng bộ giữa các máy) ──
+function hashPass(p){ let h=5381; for(let i=0;i<p.length;i++){ h=((h<<5)+h+p.charCodeAt(i))|0; } return 'h'+h; }
+function getPass(){ try{ return localStorage.getItem('cd_pass')||''; }catch(e){ return ''; } }
+function showLock(){ if(!getPass()) return; $('lock-in').value=''; $('lock-in').name='k'+Date.now(); $('lock').style.display='flex'; setTimeout(()=>$('lock-in').focus(),200); }
+function unlock(){
+  if(hashPass($('lock-in').value||'')===getPass()){ $('lock').style.display='none'; $('lock-err').textContent=''; }
+  else { $('lock-err').textContent='✗ Sai mật khẩu, thử lại'; $('lock-in').value=''; $('lock-in').focus(); }
+}
+showLock();
+
+// ── Nút Cài đặt sáng lên khi đang đồng bộ ──
+function refreshGlow(){
+  const a=st('bothi'), b=st('thien'), on=!!((a&&a.sync)||(b&&b.sync));
+  $('set-btn').classList.toggle('on',on);
+  $('set-btn').title=on?'Đang đồng bộ':'Cài đặt (chưa đồng bộ)';
+}
+setInterval(refreshGlow,2000); setTimeout(refreshGlow,1500);
+
+// ── Bảng Cài đặt chung ──
+function openSet(){ refreshSet(); $('bk-list').innerHTML=''; $('set').classList.add('on'); }
+function closeSet(){ $('set').classList.remove('on'); }
+function refreshSet(){
+  const a=st('bothi'), b=st('thien');
+  if(document.activeElement!==$('bt-code')) $('bt-code').value=(a&&a.code)||$('bt-code').value;
+  if(document.activeElement!==$('th-code')) $('th-code').value=(b&&b.code)||$('th-code').value;
+  $('bt-st').className='st '+(a&&a.sync?'ok':'no');
+  $('bt-st').textContent=a?(a.sync?'✓ Đang đồng bộ — mã '+a.code:'Chưa kết nối'):'Đang tải…';
+  $('th-st').className='st '+(b&&b.sync?'ok':'no');
+  const role=b&&b.role;
+  $('th-st').textContent=b?((b.sync||(b.code&&role==='pull'))?('✓ '+(role==='pull'?'Máy tính · chỉ tải về':'Điện thoại · tự đẩy lên')+' — mã '+b.code):'Chưa kết nối'):'Đang tải…';
+  $('role-push').classList.toggle('sel',role==='push'); $('role-pull').classList.toggle('sel',role==='pull');
+  $('th-pull-row').style.display=role==='pull'?'flex':'none';
+  const on=!!getPass();
+  $('pw-st').className='st '+(on?'ok':'no'); $('pw-st').textContent=on?'Đang BẬT — app hỏi mật khẩu mỗi khi mở.':'Đang tắt — ai cũng mở được app.';
+  $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
+  const f=(a&&a.bkFreq)||'off';
+  document.querySelectorAll('#bk-freq .btn').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
+  const lab={off:'đang tắt',d:'hàng ngày',w:'hàng tuần',m:'hàng tháng'}[f];
+  const t=x=>x?new Date(x).toLocaleString('vi-VN'):'chưa có';
+  $('bk-st').textContent='Chu kỳ: '+lab+' · Lần gần nhất — Bố thí: '+t(a&&a.bkLast)+' · Thiền: '+t(b&&b.bkLast);
+  refreshGlow();
+}
+function after(ms){ setTimeout(refreshSet,ms); }
+function genCode(id){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<10;i++) s+=c[Math.floor(Math.random()*c.length)]; $(id).value=s; }
+// Bố thí
+function btConnect(){ const c=$('bt-code').value.trim().toUpperCase(); if(!c){ shellToast('Nhập hoặc tạo mã trước'); return; } call('bothi','connectSync',c,false); shellToast('Đang kết nối Bố thí…'); after(1500); after(4000); }
+function btDisconnect(){ call('bothi','disconnectSync'); after(300); }
+// Thiền
+function thRole(r){ call('thien','setSyncRole',r); after(300); }
+function thConnect(){ const c=$('th-code').value.trim().toUpperCase(); if(!c){ shellToast('Nhập hoặc tạo mã trước'); return; } call('thien','connectSync',c,false); shellToast('Đang kết nối Thiền…'); after(1500); after(4000); }
+function thDisconnect(){ call('thien','disconnectSync'); after(300); }
+function thPull(){ call('thien','pullFromCloud'); after(2000); }
+// Mật khẩu (dùng hộp nhập của phần Bố thí → được đồng bộ)
+function pwSet(){ call('bothi','setPassFlow'); after(200); }
+function pwOff(){ call('bothi','clearPassFlow'); after(200); }
+// Sao lưu: áp dụng cho cả hai phần
+function bkFreq(f){ call('bothi','bkSetFreq',f); call('thien','bkSetFreq',f); after(200); shellToast('Sao lưu định kỳ: '+{off:'tắt',d:'hàng ngày',w:'hàng tuần',m:'hàng tháng'}[f]); }
+function bkNow(){ call('bothi','bkNow',true); const b=st('thien'); if(b&&b.role!=='pull') setTimeout(()=>call('thien','bkNow',true),1200); after(2500); }
+function bkList(){
+  const box=$('bk-list'); box.innerHTML='<div class="hint">Đang tải…</div>';
+  const parts=[['bothi','🪷 Bố thí'],['thien','🧘 Thiền']];
+  Promise.all(parts.map(([k,name])=>{
+    const s=st(k), w=W(k);
+    if(!s||!s.code||!s.sync&&k==='bothi'||!w.bkDocRef) return Promise.resolve('<div class="hint">'+name+': chưa bật đồng bộ</div>');
+    try{ w.initFirebase&&w.initFirebase(); }catch(e){}
+    return w.bkDocRef().get().then(doc=>{
+      const sn=(doc.exists&&doc.data().snapshots)||{}, ks=Object.keys(sn).sort().reverse();
+      if(!ks.length) return '<div class="hint">'+name+': chưa có bản sao lưu</div>';
+      return '<div class="lbl" style="margin-top:8px">'+name+'</div>'+ks.map(d=>'<div class="bk-item"><span>📅 '+d+'</span><button class="btn" onclick="bkRestore(\''+k+'\',\''+d+'\')">Khôi phục</button></div>').join('');
+    }).catch(e=>'<div class="hint">'+name+': lỗi '+(e&&e.message||e)+'</div>');
+  })).then(h=>{ box.innerHTML=h.join(''); });
+}
+function bkRestore(k,d){ call(k,'bkRestore',d); after(1500); }
+// Xuất / Nhập
+let _impTarget='bothi';
+function pickImport(k){ _impTarget=k; $('imp-file').value=''; $('imp-file').click(); }
+function doImport(inp){ const f=inp.files&&inp.files[0]; if(!f) return; call(_impTarget,'importData',{files:[f],value:''}); }
+
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>

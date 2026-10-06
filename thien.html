@@ -83,6 +83,9 @@ body.wide .scroll>.page{display:block!important;height:100%;overflow-y:auto;over
 body.wide .scroll>.page:last-child{border-right:none}
 body.wide .scroll>.page>*{zoom:var(--colz,1)}
 body.wide .scroll>.page::before{content:attr(data-title);display:block;position:sticky;top:0;z-index:15;margin:0 -10px 10px;padding:7px 12px;background:linear-gradient(180deg,#d97706 0%,#b45309 100%);color:#fff;font-size:13px;font-weight:800;text-align:center;letter-spacing:.03em}
+/* 3 cột: tiêu đề cột như tab — cột đang dùng vàng kem (tab chọn), cột khác xanh tối; chạm vào cột để chọn */
+body.wide .scroll>.page::before{background:linear-gradient(180deg,#86b5a9 0%,#5f9a8b 100%)!important;color:#eef8f5!important;text-shadow:0 1px 1px rgba(0,0,0,.2);cursor:pointer;}
+body.wide .scroll>.page.on::before{background:linear-gradient(180deg,#f1dc9c 0%,#f6ead0 60%,#f5f5f5 100%)!important;color:#6b4f1d!important;font-size:14px;text-shadow:none;}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,0) 26%),linear-gradient(180deg,#ffffff 0%,#fdfaf4 60%,#f1ead9 100%);border:1px solid #ded4bd;border-radius:var(--rl);padding:12px 14px;margin-bottom:10px;box-shadow:0 6px 14px rgba(70,50,15,.16),0 2px 0 rgba(255,255,255,1) inset,0 -3px 6px rgba(150,125,75,.10) inset;position:relative}
 .card-hd{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
 .gwrap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;justify-items:center}
@@ -1570,6 +1573,14 @@ let _wideT=null;
 window.addEventListener('resize',function(){ clearTimeout(_wideT); _wideT=setTimeout(applyWide,150); });
 window.addEventListener('orientationchange',function(){ setTimeout(applyWide,200); });
 try{ new ResizeObserver(function(){ clearTimeout(_wideT); _wideT=setTimeout(applyWide,150); }).observe(document.documentElement); }catch(e){}
+// 3 cột: chạm vào cột nào thì cột đó thành "đang chọn" (tiêu đề đổi màu như tab)
+document.addEventListener('pointerdown',function(e){
+  if(!_wide) return; const pg=e.target.closest&&e.target.closest('.scroll>.page'); if(!pg||pg.classList.contains('on')) return;
+  const id=pg.id.replace('pg-',''), ids=['today','month','year'];
+  document.querySelectorAll('.scroll>.page').forEach(x=>x.classList.toggle('on',x===pg));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('on',ids[i]===id));
+  try{ localStorage.setItem('thien_last_tab', id); }catch(err){}
+},true);
 function nav(id){
   try{ localStorage.setItem('thien_last_tab', id); }catch(e){}
   const ids=['today','month','year'];

@@ -265,6 +265,9 @@ body.wide #cols>.page{overflow-x:hidden;container-type:inline-size;}
   #cols .th-row .nm{white-space:normal;overflow:visible;line-height:1.25;}
 }
 body.wide #cols>.page::before{content:attr(data-title);display:block;position:sticky;top:0;z-index:5;padding:7px 12px;background:linear-gradient(180deg,#d97706 0%,#b45309 100%);color:#fff;font-size:13px;font-weight:800;text-align:center;letter-spacing:.03em;}
+/* 3 cột: tiêu đề cột như tab — cột đang dùng vàng kem (tab chọn), cột khác xanh tối; chạm vào cột để chọn */
+body.wide #cols>.page::before{background:linear-gradient(180deg,#86b5a9 0%,#5f9a8b 100%)!important;color:#eef8f5!important;text-shadow:0 1px 1px rgba(0,0,0,.2);cursor:pointer;}
+body.wide #cols>.page.active::before{background:linear-gradient(180deg,#f1dc9c 0%,#f6ead0 60%,#f5f5f5 100%)!important;color:#6b4f1d!important;font-size:14px;text-shadow:none;}
 body.wide .page.lock{overflow:hidden!important;}
 html.embed #home-screen{display:none!important;}
 html.embed #header{display:none!important;}
@@ -1769,6 +1772,12 @@ let _wide=false;
 // Ngang + đủ rộng + đủ cao: máy tính, màn hình trong điện thoại gập xoay ngang (~840px). Màn hình ngoài xoay ngang (cao ~400px) vẫn 1 trang.
 function isWideScreen(){ const w=window.innerWidth, h=window.innerHeight; return w>h && w>=680 && h>=480; }
 // Gom 3 trang vào một khung; ở màn hình ngang & rộng thì hiện cạnh nhau, mỗi trang 1/3
+// 3 cột: chạm vào cột nào thì cột đó thành "đang chọn" (tiêu đề đổi màu như tab)
+document.addEventListener('pointerdown',function(e){
+  if(!_wide) return; const pg=e.target.closest&&e.target.closest('#cols>.page'); if(!pg||pg.classList.contains('active')) return;
+  document.querySelectorAll('#cols>.page').forEach(x=>x.classList.toggle('active',x===pg));
+  curTab=pg.id.replace('page-',''); ['month','year','thien'].forEach(x=>{ const t=document.getElementById('tab-'+x); if(t) t.classList.toggle('active',x===curTab); }); saveView();
+},true);
 function setupCols(){
   if(document.getElementById('cols')) return;
   const c=document.createElement('div'); c.id='cols';

@@ -1486,7 +1486,14 @@ function mergeStates(L,R){
     });
   });
   const lc=L.cats&&L.cats.length?L.cats:DEFAULT_CATS, rc=R.cats&&R.cats.length?R.cats:null;
-  const mc=rc?pickNewer(lc,rc,L.catsU||0,R.catsU||0):lc;
+  // Loại thiện pháp: bên nào sửa SAU thì thắng; nếu HOÀ (vd. máy mới cài chỉ có loại mặc định) → GỘP CHUNG theo id,
+  // tuyệt đối không để danh sách mặc định của máy mới đè mất các loại đã thêm.
+  const lu=L.catsU||0, ru=R.catsU||0;
+  let mc=lc;
+  if(rc){
+    if(lu!==ru) mc=(lu>ru?lc:rc);
+    else { const seen=new Set(); mc=[]; [...rc,...lc].forEach(c=>{ if(c&&c.id&&!seen.has(c.id)){ seen.add(c.id); mc.push(c); } }); }
+  }
   const mt=pickNewer(L.thien||{},R.thien||{},L.thienU||0,R.thienU||0);
   return {data:out,cats:JSON.parse(JSON.stringify(mc)),thien:JSON.parse(JSON.stringify(mt)),del:D,
           catsU:Math.max(L.catsU||0,R.catsU||0),thienU:Math.max(L.thienU||0,R.thienU||0)};

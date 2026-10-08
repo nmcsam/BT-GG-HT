@@ -28,3 +28,9 @@ gradlew.bat assembleDebug
 ```
 APK: `app\build\outputs\apk\debug\app-debug.apk`. Tăng `versionCode` trong `app/build.gradle` mỗi lần phát hành.
 Thay đổi giao diện web (index.html / bothi.html / thien.html) **không cần** dựng lại APK — APK luôn mở bản web mới nhất.
+
+## Phát hành bản APK mới (người dùng chỉ việc bấm "Cập nhật" trong app)
+1. Tăng `versionCode` / `versionName` trong `app/build.gradle`, dựng lại (như trên).
+2. Chép APK vào `app/BT.GG.HT.apk` (thư mục web) và sửa `app/version.json` cho đúng `versionCode`.
+3. Commit + push → trong APK cũ tự hiện thanh **🆕 Có bản app mới → Cập nhật**;
+   trên Chrome Android tự hiện **🔔 Cài app BT.GG.HT**.

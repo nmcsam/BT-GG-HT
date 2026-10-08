@@ -1,0 +1,9 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="timer180" android:enabled="true"
+        android:shortcutShortLabel="@string/sc_timer">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="thienclock://set?min=180"
+            android:targetPackage="app.thien.tracker"
+            android:targetClass="app.thien.tracker.TimerBridgeActivity"/>
+    </shortcut>
+</shortcuts>

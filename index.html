@@ -194,6 +194,14 @@ body.bothi #date-strip{display:block;}
         <button class="hd" onclick="nameEdit()"><span class="ic">👤</span><span class="nm">Tên của bạn</span><span class="vl" id="v-nm"></span><span class="ch">›</span></button>
       </div>
 
+      <div class="it" id="it-bell">
+        <button class="hd" onclick="sec('bell')"><span class="ic">🔔</span><span class="nm">Chuông thiền</span><span class="vl" id="v-bell"></span><span class="ch">›</span></button>
+        <div class="bd">
+          <div class="hint" id="bell-hint"></div>
+          <div class="row"><button class="btn p" onclick="bellTest()">🔔 Thử chuông</button></div>
+        </div>
+      </div>
+
       <div class="it" id="it-pw">
         <button class="hd" onclick="sec('pw')"><span class="ic">🔒</span><span class="nm">Mật khẩu mở app</span><span class="vl" id="v-pw"></span><span class="ch">›</span></button>
         <div class="bd">
@@ -225,7 +233,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v24 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v25 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -323,6 +331,12 @@ function refreshSet(){
   $('pw-st').className='st '+(on?'ok':'no'); $('pw-st').textContent=on?'Đang BẬT — app hỏi mật khẩu mỗi khi mở.':'Đang tắt — ai cũng mở được app.';
   $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
   try{ const nm=W('thien').getUserName(); $('v-nm').textContent=nm||'Chưa đặt'; $('v-nm').className='vl'+(nm?' ok':''); }catch(e){}
+  const bm=bellMode(), vb=$('v-bell');
+  vb.textContent=bm==='native'?'✓ Đồng hồ hệ thống':bm==='native-link'?'✓ Qua app Đồng hồ':bm==='web'?'⚠ Chuông trên trang':'…';
+  vb.className='vl'+(bm&&bm!=='web'?' ok':'');
+  $('bell-hint').textContent=bm==='web'
+    ? 'Đang chạy trên trình duyệt: Android có thể tắt chuông khi màn hình tắt. Để chuông luôn reo, hãy dùng APK BT.GG.HT (chuông do Đồng hồ hệ thống reo).'
+    : 'Chuông do Đồng hồ hệ thống của điện thoại reo — reo cả khi tắt màn hình hay chuyển app.';
   $('v-pw').textContent=on?'✓ Đang bật':'Tắt'; $('v-pw').className='vl'+(on?' ok':'');
   const f=(a&&a.bkFreq)||'off';
   document.querySelectorAll('#bk-freq button').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
@@ -358,6 +372,9 @@ function pwOff(){
   if(hashPass(old)!==cur){ shellToast('✗ Sai mật khẩu'); return; }
   setPass('',Date.now()); syncPass(); refreshSet(); shellToast('✓ Đã tắt mật khẩu');
 }
+// Chuông thiền: APK → Đồng hồ hệ thống (reo cả khi tắt màn hình); Chrome → chuông trên trang (Android có thể tắt khi màn hình tắt)
+function bellMode(){ try{ return W('thien').__bellMode(); }catch(e){ return ''; } }
+function bellTest(){ const m=call('thien','__testBell'); shellToast(m==='native'?'⏰ Đã mở Đồng hồ hệ thống — hẹn 1 phút để thử chuông':'🔔 Đang phát chuông thử'); }
 // Tên trong báo cáo thiền (riêng từng người)
 function nameEdit(){ call('thien','editUserName'); after(300); }
 // Sao lưu: áp dụng cho cả hai phần

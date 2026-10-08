@@ -9,8 +9,8 @@ android {
         applicationId "app.thien.tracker"
         minSdk 24
         targetSdk 36
-        versionCode 201
-        versionName "BT.GG.HT 1.1"
+        versionCode 202
+        versionName "BT.GG.HT 1.2"
     }
     buildTypes {
         release { minifyEnabled false }

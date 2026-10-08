@@ -76,6 +76,8 @@ public class MainActivity extends Activity {
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
+        // Giữ cỡ chữ đúng như trên Chrome (không phóng theo cỡ chữ hệ thống → giao diện không vỡ)
+        s.setTextZoom(100);
         s.setUserAgentString(s.getUserAgentString() + " TCAndroid");
 
         web.addJavascriptInterface(new Bridge(), "TCAndroidBridge");

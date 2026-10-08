@@ -14,8 +14,9 @@
 <link rel="icon" type="image/png" href="icon-med2-192.png">
 <title>Nguyễn Hồng Sâm</title>
 <script>/* Chạy trong APK BT.GG.HT: cầu nối gốc TCAndroidBridge có ở MỌI khung (kể cả khi Thiền nằm trong app chung).
-   Có cầu nối → chuông do Đồng hồ hệ thống reo (không bị Android tắt khi màn hình tắt). KHÔNG dựa vào việc chèn mã từ ngoài. */
-try{ if(window.TCAndroidBridge || /\bTCAndroid\b/.test(navigator.userAgent)) window.TCAndroid=true; }catch(e){}</script>
+   Có cầu nối (APK ≥1.3, có testBell) → APK tự đặt báo thức + phát 3 tiếng chuông chùa (reo cả khi tắt màn hình), KHÔNG mở app Đồng hồ.
+   APK cũ 1.0–1.2 → coi như trình duyệt (chuông trên trang). KHÔNG dựa vào việc chèn mã từ ngoài. */
+try{ if(window.TCAndroidBridge && window.TCAndroidBridge.testBell) window.TCAndroid=true; }catch(e){}</script>
 <script>/* Mở bên trong app chung (Bố thí · Giữ giới · Hành thiền) → ẩn trang bìa */try{if(window.self!==window.top)document.documentElement.classList.add('embed');}catch(e){document.documentElement.classList.add('embed');}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" onload="if(typeof renderCharts==='function')try{renderCharts();}catch(e){}if(typeof renderPieChart==='function')try{renderPieChart();}catch(e){}"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -2086,8 +2087,8 @@ function timerTap(){
     clearInterval(timerInterval); timerRunning=false; releaseWakeLock(); kaStop();
     try{ localStorage.removeItem('thien_run'); }catch(e){}
     try{ if(window.TCAndroid){ tcClockCancel(); } }catch(e){}
-    const elapsed=Math.round((Date.now()-timerStartAt)/60000);
-    if(elapsed>=1){
+    const elapsedMs=Date.now()-timerStartAt, elapsed=Math.round(elapsedMs/60000);
+    if(elapsedMs>5*60000){ // chỉ ghi khi thiền LỚN HƠN 5 phút
       const k=getDK();let e=getEntry(k);
       if(!e){e={date:k,mins1:0,mins2:0,q1:3,q2:3,types1:[],types2:[]};ST.data.push(e);}
       thAppend(e, elapsed);
@@ -2096,7 +2097,7 @@ function timerTap(){
       save();renderAll();toast('✓ Đã ghi '+elapsed+'ph vào hôm nay');
       _noteKey=k; _noteIdx=e.th.length-1;
       openNoteModal(elapsed);
-    } else { toast('Chưa đủ 1 phút — không ghi'); }
+    } else { toast('Chưa quá 5 phút — không ghi'); }
     document.getElementById('timer-display').textContent='0:00:00';
     document.getElementById('timer-ring').style.stroke='var(--teal)';
     updateRing(1,1);
@@ -2118,12 +2119,12 @@ function timerTap(){
 }
 function tcClockSet(min){
   min=Math.max(1,Math.min(1440,parseInt(min,10)||0)); if(!min) return;
-  try{ if(window.TCAndroidBridge){ window.TCAndroidBridge.setTimer(min); return; } }catch(e){}
-  try{ (window.top||window).location.href='thienclock://set?min='+min; }catch(e){ location.href='thienclock://set?min='+min; }
+  if(!window.TCAndroid) return; // chỉ APK ≥1.3 (chuông native 3 tiếng); không bao giờ mở app Đồng hồ
+  try{ window.TCAndroidBridge.setTimer(min); }catch(e){}
 }
-function tcClockCancel(){ try{ if(window.TCAndroidBridge){ window.TCAndroidBridge.cancelTimer(); } }catch(e){} }
+function tcClockCancel(){ try{ if(window.TCAndroid){ window.TCAndroidBridge.cancelTimer(); } }catch(e){} }
 function sysTimerGo(){
-  // gọi cầu nối native trong APK: thienclock://set?min=N -> mở thẳng Hẹn giờ của app Đồng hồ
+  // gọi cầu nối native trong APK: đặt chuông 3 tiếng sau N phút
   const inp=document.getElementById('timer-modal-min');
   let v=parseInt(inp && inp.value,10);
   if(!isFinite(v)||v<1) v=parseInt(localStorage.getItem('thien_last_set')||'180',10)||180;
@@ -3680,8 +3681,11 @@ function bkRefreshUI(){
   }
 }
 // Cho app chung đọc trạng thái (đồng bộ / sao lưu)
-function __bellMode(){ return window.TCAndroid ? (window.TCAndroidBridge?'native':'native-link') : 'web'; }
-function __testBell(){ if(window.TCAndroid){ tcClockSet(1); return 'native'; } try{ initRealBell(); }catch(e){} ringBell(bellType); return 'web'; }
+function __bellMode(){ if(window.TCAndroid) return 'native'; try{ if(window.TCAndroidBridge) return 'old-apk'; }catch(e){} return 'web'; }
+function __testBell(){
+  try{ if(window.TCAndroidBridge && window.TCAndroidBridge.testBell){ window.TCAndroidBridge.testBell(); return 'native'; } }catch(e){}
+  try{ initRealBell(); }catch(e){} ringBell(bellType); return 'web';
+}
 function __state(){ return {sync:!!(syncCode&&fbDb), code:syncCode||'', role:syncRole, bkFreq:bkFreq(), bkLast:bkLast()}; }
 function bkDocRef(){ return fbDb.collection('syncs').doc(syncCode+'-BK'); }
 function bkNow(manual){

@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.AlarmClock;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -19,14 +21,15 @@ import android.widget.Toast;
  * APK BT.GG.HT — WebView bọc app chung https://nmcsam.github.io/BT-GG-HT/
  *
  * CHUÔNG THIỀN (vì sao cần APK):
- *  Trên trình duyệt, Android có thể tắt âm thanh/đồng hồ của trang khi tắt màn hình → chuông câm.
- *  APK này giao việc reo chuông cho ĐỒNG HỒ HỆ THỐNG (AlarmClock.ACTION_SET_TIMER) → luôn reo.
+ *  Trên trình duyệt, Android có thể tắt âm thanh của trang khi tắt màn hình → chuông câm.
+ *  APK tự đặt báo thức chính xác (Bell/AlarmReceiver/BellService) và phát 3 tiếng chuông chùa
+ *  (res/raw/bell_chua.wav, như Meditation 5.19) — reo cả khi tắt màn hình. KHÔNG mở app Đồng hồ.
  *
  * CẦU NỐI (không bao giờ vỡ khi đổi giao diện web):
- *  - addJavascriptInterface("TCAndroidBridge") có mặt trong MỌI khung, kể cả khung Thiền (thien.html)
- *    nằm bên trong trang chung. Trang Thiền tự nhận ra cầu nối và gọi TCAndroidBridge.setTimer(phút).
+ *  - addJavascriptInterface("TCAndroidBridge") có mặt trong MỌI khung, kể cả khung Thiền (thien.html).
+ *    Trang Thiền gọi TCAndroidBridge.setTimer(phút) / cancelTimer() / testBell().
  *  - User-Agent có thêm " TCAndroid" để trang nhận biết sớm.
- *  - Dự phòng: vẫn bắt đường dẫn thienclock://set?min=N.
+ *  - Dự phòng: vẫn bắt đường dẫn thienclock://set?min=N và thienclock://cancel.
  *  KHÔNG chèn mã JavaScript từ ngoài vào trang (cách cũ đã vỡ khi gộp 2 app vào một).
  */
 public class MainActivity extends Activity {
@@ -42,15 +45,15 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setTimer(int minutes) {
             final int m = Math.max(1, Math.min(1440, minutes));
-            runOnUiThread(() -> openClockTimer(m));
+            runOnUiThread(() -> setBell(m));
         }
         @JavascriptInterface
-        public void cancelTimer() {
-            // Không tự huỷ hẹn giờ của Đồng hồ (tránh đóng nhầm hẹn giờ khác của người dùng);
-            // xả thiền sớm thì tắt hẹn giờ ngay trong app Đồng hồ.
-        }
+        public void cancelTimer() { Bell.cancel(MainActivity.this); }
+        /** Thử chuông: đổ 3 tiếng chuông ngay. */
         @JavascriptInterface
-        public String version() { return "BT.GG.HT-android-1"; }
+        public void testBell() { runOnUiThread(() -> Bell.ringNow(MainActivity.this)); }
+        @JavascriptInterface
+        public String version() { return "BT.GG.HT-android-2"; }
         /** Số phiên bản APK — trang so với app/version.json để tự báo "Có bản app mới". */
         @JavascriptInterface
         public int versionCode() {
@@ -81,6 +84,12 @@ public class MainActivity extends Activity {
         s.setUserAgentString(s.getUserAgentString() + " TCAndroid");
 
         web.addJavascriptInterface(new Bridge(), "TCAndroidBridge");
+        Bell.ensureChannels(this);
+        // Android 13+: xin quyền thông báo (đồng hồ đếm trên màn hình khoá + báo đủ giờ)
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 9);
+        }
 
         web.setWebChromeClient(new WebChromeClient() {
             // Cho nút "Nhập dữ liệu (JSON)" mở được trình chọn file
@@ -123,13 +132,13 @@ public class MainActivity extends Activity {
         if (scheme == null) return false;
 
         if ("thienclock".equalsIgnoreCase(scheme)) {
-            if ("cancel".equalsIgnoreCase(uri.getHost())) return true; // không mở nhầm hẹn giờ
+            if ("cancel".equalsIgnoreCase(uri.getHost())) { Bell.cancel(this); return true; }
             int min = 30;
             try {
                 String m = uri.getQueryParameter("min");
                 if (m != null) min = Integer.parseInt(m.trim());
             } catch (Exception ignored) { }
-            openClockTimer(Math.max(1, Math.min(1440, min)));
+            setBell(Math.max(1, Math.min(1440, min)));
             return true;
         }
 
@@ -155,17 +164,9 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private void openClockTimer(int minutes) {
-        Intent i = new Intent(AlarmClock.ACTION_SET_TIMER)
-                .putExtra(AlarmClock.EXTRA_LENGTH, minutes * 60)
-                .putExtra(AlarmClock.EXTRA_MESSAGE, "Thiền " + minutes + " phút")
-                .putExtra(AlarmClock.EXTRA_SKIP_UI, false);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            startActivity(i);
-        } catch (Exception e) {
-            Toast.makeText(this, "Không tìm thấy app Đồng hồ hỗ trợ Hẹn giờ", Toast.LENGTH_LONG).show();
-        }
+    private void setBell(int minutes) {
+        Bell.schedule(this, minutes, System.currentTimeMillis());
+        Toast.makeText(this, "🔔 Đã đặt chuông sau " + minutes + " phút", Toast.LENGTH_SHORT).show();
     }
 
     private void openExternally(Uri uri) {

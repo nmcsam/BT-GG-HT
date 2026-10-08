@@ -240,7 +240,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v26 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v27 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -343,11 +343,11 @@ function refreshSet(){
   $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
   try{ const nm=W('thien').getUserName(); $('v-nm').textContent=nm||'Chưa đặt'; $('v-nm').className='vl'+(nm?' ok':''); }catch(e){}
   const bm=bellMode(), vb=$('v-bell');
-  vb.textContent=bm==='native'?'✓ Đồng hồ hệ thống':bm==='native-link'?'✓ Qua app Đồng hồ':bm==='web'?'⚠ Chuông trên trang':'…';
-  vb.className='vl'+(bm&&bm!=='web'?' ok':'');
+  vb.textContent=bm==='native'?'✓ 3 tiếng chuông (app)':bm==='old-apk'?'⚠ Cần cập nhật app':bm==='web'?'⚠ Chuông trên trang':'…';
+  vb.className='vl'+(bm==='native'?' ok':'');
   $('bell-hint').textContent=bm==='web'
-    ? 'Đang chạy trên trình duyệt: Android có thể tắt chuông khi màn hình tắt. Để chuông luôn reo, hãy dùng APK BT.GG.HT (chuông do Đồng hồ hệ thống reo).'
-    : 'Chuông do Đồng hồ hệ thống của điện thoại reo — reo cả khi tắt màn hình hay chuyển app.';
+    ? 'Đang chạy trên trình duyệt: Android có thể tắt chuông khi màn hình tắt. Để chuông luôn reo, hãy dùng app BT.GG.HT (3 tiếng chuông chùa, reo cả khi tắt màn hình).'
+    : (bm==='old-apk'?'Bản app cũ — bấm Cập nhật ở thanh trên cùng để có 3 tiếng chuông chùa.':'3 tiếng chuông chùa do app reo — reo cả khi tắt màn hình hay chuyển app. Thiền lớn hơn 5 phút mới ghi kết quả.');
   $('v-pw').textContent=on?'✓ Đang bật':'Tắt'; $('v-pw').className='vl'+(on?' ok':'');
   const f=(a&&a.bkFreq)||'off';
   document.querySelectorAll('#bk-freq button').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
@@ -383,9 +383,9 @@ function pwOff(){
   if(hashPass(old)!==cur){ shellToast('✗ Sai mật khẩu'); return; }
   setPass('',Date.now()); syncPass(); refreshSet(); shellToast('✓ Đã tắt mật khẩu');
 }
-// Chuông thiền: APK → Đồng hồ hệ thống (reo cả khi tắt màn hình); Chrome → chuông trên trang (Android có thể tắt khi màn hình tắt)
+// Chuông thiền: APK → 3 tiếng chuông chùa native (reo cả khi tắt màn hình); Chrome → chuông trên trang (Android có thể tắt khi màn hình tắt)
 function bellMode(){ try{ return W('thien').__bellMode(); }catch(e){ return ''; } }
-function bellTest(){ const m=call('thien','__testBell'); shellToast(m==='native'?'⏰ Đã mở Đồng hồ hệ thống — hẹn 1 phút để thử chuông':'🔔 Đang phát chuông thử'); }
+function bellTest(){ const m=call('thien','__testBell'); shellToast('🔔 Đang phát 3 tiếng chuông thử'); }
 // Tên trong báo cáo thiền (riêng từng người)
 function nameEdit(){ call('thien','editUserName'); after(300); }
 // Sao lưu: áp dụng cho cả hai phần
@@ -411,7 +411,7 @@ let _impTarget='bothi';
 function pickImport(k){ _impTarget=k; $('imp-file').value=''; $('imp-file').click(); }
 function doImport(inp){ const f=inp.files&&inp.files[0]; if(!f) return; call(_impTarget,'importData',{files:[f],value:''}); }
 
-// ── App BT.GG.HT (APK): chuông thiền do Đồng hồ hệ thống reo. Trên Chrome Android → nhắc cài; trong APK → tự báo bản mới ──
+// ── App BT.GG.HT (APK): chuông thiền native (3 tiếng chuông chùa). Trên Chrome Android → nhắc cài; trong APK → tự báo bản mới ──
 const IS_APK=!!window.TCAndroidBridge;
 function abShow(text,btn,key){ $('ab-text').textContent=text; $('ab-go').textContent=btn; $('app-banner').dataset.key=key; $('app-banner').classList.add('on'); }
 function abClose(){ const k=$('app-banner').dataset.key; try{ localStorage.setItem('btgght_ab_'+k, String(Date.now())); }catch(e){} $('app-banner').classList.remove('on'); }

@@ -1,7 +1,7 @@
 // MẠNG TRƯỚC — CACHE DỰ PHÒNG:
 // Có mạng: luôn tải bản MỚI NHẤT, đồng thời lưu một bản dự phòng.
 // Mất mạng: mở app bằng bản dự phòng đã lưu lần gần nhất.
-const CACHE = 'btgght-offline-v32';
+const CACHE = 'btgght-offline-v33';
 
 self.addEventListener('install', () => { self.skipWaiting(); });
 

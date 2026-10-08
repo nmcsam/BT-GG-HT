@@ -1,7 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
 
     <application
         android:label="BT.GG.HT"
@@ -10,7 +16,7 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="false">
 
-        <!-- Màn hình chính: WebView nạp https://nmcsam.github.io/BT-GG-HT/ + cầu nối TCAndroidBridge (chuông = Đồng hồ hệ thống) -->
+        <!-- Màn hình chính: WebView nạp https://nmcsam.github.io/BT-GG-HT/ + cầu nối TCAndroidBridge (chuông thiền native: 3 tiếng chuông chùa) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -22,22 +28,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
         </activity>
 
-        <!-- Cầu nối cho App Shortcut (long-press icon) và link thienclock:// từ ngoài -->
-        <activity
-            android:name=".TimerBridgeActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:excludeFromRecents="true"
-            android:noHistory="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="thienclock"/>
-            </intent-filter>
-        </activity>
+        <!-- Đủ giờ thiền → phát 3 tiếng chuông (res/raw/bell_chua.wav), reo cả khi tắt màn hình -->
+        <receiver android:name=".AlarmReceiver" android:exported="false"/>
+        <service
+            android:name=".BellService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"/>
     </application>
 </manifest>

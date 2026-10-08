@@ -2,16 +2,20 @@
 
 ## Vì sao cần APK (chuông thiền)
 Trên trình duyệt (Chrome/PWA), Android có thể **tắt âm thanh và đồng hồ của trang khi tắt màn hình** → chuông thiền câm.
-APK này giao việc reo chuông cho **Đồng hồ hệ thống** (`AlarmClock.ACTION_SET_TIMER`) → chuông luôn reo.
+APK này tự đặt **báo thức chính xác** (`Bell.java` → `AlarmManager.setAlarmClock`) và khi đủ giờ `AlarmReceiver` bật
+`BellService` phát **3 tiếng chuông chùa** `res/raw/bell_chua.wav` (luồng báo thức, như Meditation 5.19) → reo cả khi tắt màn hình.
+Trong lúc thiền có thông báo "🧘 Đang thiền" đếm ngược. **KHÔNG mở app Đồng hồ hệ thống** (người dùng không muốn).
+Thiền **lớn hơn 5 phút** mới ghi kết quả (thien.html → `timerTap`).
 
 ## Cầu nối — QUY TẮC KHÔNG ĐƯỢC PHÁ (để không mất chuông lần nữa)
 - APK gắn `TCAndroidBridge` (addJavascriptInterface) vào **mọi khung**, kể cả `thien.html` nằm trong `index.html`.
-- `thien.html` tự bật `window.TCAndroid` khi thấy `TCAndroidBridge` (hoặc chữ `TCAndroid` trong User-Agent),
-  và gọi `tcClockSet(phút)` → `TCAndroidBridge.setTimer(phút)`.
+- `thien.html` tự bật `window.TCAndroid` khi thấy `TCAndroidBridge`,
+  và gọi `tcClockSet(phút)` → `TCAndroidBridge.setTimer(phút)`; xả thiền → `cancelTimer()`; nút Thử chuông → `testBell()`.
+- `window.TCAndroid` chỉ bật khi cầu nối có `testBell` (APK ≥ 1.3). APK cũ 1.0–1.2 mở app Đồng hồ → bị coi như trình duyệt.
 - **Không** chèn mã JavaScript từ ngoài vào trang (APK Meditation cũ làm vậy; gộp 2 app vào khung là vỡ → mất chuông).
 - Khi sửa `thien.html`: giữ nguyên `tcClockSet`, `tcClockCancel`, đoạn nhận biết `TCAndroid` trong `<head>`,
   và các nhánh `if(window.TCAndroid)` trong `timerTap` / `timerBegin` / `timerTick`.
-- Kiểm tra nhanh: app → ⚙ Cài đặt → **🔔 Chuông thiền** phải ghi **✓ Đồng hồ hệ thống** (trong APK).
+- Kiểm tra nhanh: app → ⚙ Cài đặt → **🔔 Chuông thiền** phải ghi **✓ 3 tiếng chuông (app)** (trong APK); bấm **Thử chuông** phải nghe 3 tiếng chuông chùa.
 
 ## Cài đè lên APK Meditation cũ (giữ dữ liệu)
 - `applicationId` giữ nguyên `app.thien.tracker`; `versionCode` phải **lớn hơn** bản đang cài (bản Meditation 5.19 = 120).

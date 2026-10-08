@@ -51,6 +51,12 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface
         public String version() { return "BT.GG.HT-android-1"; }
+        /** Số phiên bản APK — trang so với app/version.json để tự báo "Có bản app mới". */
+        @JavascriptInterface
+        public int versionCode() {
+            try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode; }
+            catch (Exception e) { return 0; }
+        }
     }
 
     @Override
@@ -126,6 +132,11 @@ public class MainActivity extends Activity {
         }
 
         if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+            String path = uri.getPath();
+            if (path != null && path.toLowerCase().endsWith(".apk")) { // tải bản APK mới → để Chrome tải & cài
+                openExternally(uri);
+                return true;
+            }
             String host = uri.getHost();
             if (host != null && (host.equalsIgnoreCase("nmcsam.github.io")
                     || host.endsWith("gstatic.com") || host.endsWith("googleapis.com")

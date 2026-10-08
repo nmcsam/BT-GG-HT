@@ -85,6 +85,12 @@ body.bothi #date-strip{display:block;}
 #date-strip{background:#e0d5f4!important;color:#3c2166!important;}
 #frames{background:#f5f5f5;}
 @media (orientation:landscape) and (min-width:680px){ #bar,#set-btn{align-self:center;margin-bottom:5px;} #top{padding-top:calc(6px + env(safe-area-inset-top));} }
+/* Thanh nhắc cài / cập nhật app BT.GG.HT */
+#app-banner{display:none;flex-shrink:0;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(180deg,#fff7e0,#ffe9b3);border-bottom:1px solid #f0c860;font-size:13px;font-weight:700;color:#6b4f1d;}
+#app-banner.on{display:flex;}
+#ab-text{flex:1;line-height:1.35;}
+#ab-go{flex-shrink:0;padding:7px 14px;border-radius:16px;background:linear-gradient(180deg,#16a34a,#15803d);color:#fff;text-decoration:none;font-weight:800;box-shadow:0 2px 6px rgba(21,128,61,.35);}
+#ab-x{flex-shrink:0;width:28px;height:28px;border:none;border-radius:50%;background:rgba(0,0,0,.08);color:#6b4f1d;font-weight:800;cursor:pointer;}
 /* Thông báo */
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:#0b3d35;color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:900;max-width:88vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3);}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -158,6 +164,7 @@ body.bothi #date-strip{display:block;}
     <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
   </div>
 </div>
+<div id="app-banner"><span id="ab-text"></span><a id="ab-go" href="app/BT.GG.HT.apk" download>Cài app</a><button id="ab-x" onclick="abClose()" aria-label="Đóng">✕</button></div>
 <div id="date-strip"></div>
 <div id="frames">
   <iframe id="f-bothi" title="Bố thí" src="bothi.html"></iframe>
@@ -233,7 +240,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v25 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v26 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -284,7 +291,11 @@ function syncPass(){
     ref.get().then(doc=>{
       const r=doc.exists?doc.data():null, rt=(r&&r.t)||0, lt=getPassT();
       if(r&&rt>lt){ setPass(r.h||'',rt); if(typeof refreshSet==='function') refreshSet(); }
-      else if(lt>rt) ref.set({h:getPass(),t:lt});
+      else if(lt>rt) ref.set({h:getPass(),t:lt},{merge:true});
+      // Mã Bố thí chung: máy chưa có → tự kết nối; máy đã có → lưu lên để các máy khác của mình tự dùng
+      const a=st('bothi'), loc=(a&&a.code)||'', rem=(r&&r.bt)||'';
+      if(!loc && rem){ call('bothi','connectSync',rem,true); shellToast('☁️ Đã tự kết nối Bố thí (mã chung của gia đình)'); setTimeout(refreshGlow,3000); }
+      else if(loc && loc!==rem) ref.set({bt:loc},{merge:true});
     }).catch(()=>{});
   }catch(e){}
 }
@@ -400,6 +411,21 @@ let _impTarget='bothi';
 function pickImport(k){ _impTarget=k; $('imp-file').value=''; $('imp-file').click(); }
 function doImport(inp){ const f=inp.files&&inp.files[0]; if(!f) return; call(_impTarget,'importData',{files:[f],value:''}); }
 
+// ── App BT.GG.HT (APK): chuông thiền do Đồng hồ hệ thống reo. Trên Chrome Android → nhắc cài; trong APK → tự báo bản mới ──
+const IS_APK=!!window.TCAndroidBridge;
+function abShow(text,btn,key){ $('ab-text').textContent=text; $('ab-go').textContent=btn; $('app-banner').dataset.key=key; $('app-banner').classList.add('on'); }
+function abClose(){ const k=$('app-banner').dataset.key; try{ localStorage.setItem('btgght_ab_'+k, String(Date.now())); }catch(e){} $('app-banner').classList.remove('on'); }
+function abDismissed(k,days){ try{ const t=+localStorage.getItem('btgght_ab_'+k)||0; return t && (Date.now()-t < days*86400000); }catch(e){ return false; } }
+setTimeout(function(){
+  if(IS_APK){
+    fetch('app/version.json?'+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{
+      let cur=200; try{ cur=window.TCAndroidBridge.versionCode ? window.TCAndroidBridge.versionCode() : 200; }catch(e){}
+      if(v && v.versionCode>cur && !abDismissed('v'+v.versionCode,1)) abShow('🆕 Có bản app BT.GG.HT mới ('+v.versionName+'). Bấm Cập nhật rồi chọn Cài đặt — dữ liệu giữ nguyên.','Cập nhật','v'+v.versionCode);
+    }).catch(()=>{});
+  } else if(/Android/i.test(navigator.userAgent) && !abDismissed('install',7)){
+    abShow('🔔 Cài app BT.GG.HT để chuông thiền luôn reo (kể cả khi tắt màn hình).','Cài app','install');
+  }
+},1500);
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>

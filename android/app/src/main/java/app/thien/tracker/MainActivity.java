@@ -52,8 +52,11 @@ public class MainActivity extends Activity {
         /** Thử chuông: đổ 3 tiếng chuông ngay. */
         @JavascriptInterface
         public void testBell() { runOnUiThread(() -> Bell.ringNow(MainActivity.this)); }
+        /** Chẩn đoán chuông (JSON) cho trang Cài đặt. */
         @JavascriptInterface
-        public String version() { return "BT.GG.HT-android-2"; }
+        public String bellInfo() { return Bell.info(MainActivity.this); }
+        @JavascriptInterface
+        public String version() { return "BT.GG.HT-android-3"; }
         /** Số phiên bản APK — trang so với app/version.json để tự báo "Có bản app mới". */
         @JavascriptInterface
         public int versionCode() {

@@ -204,7 +204,7 @@ body.bothi #date-strip{display:block;}
       <div class="it" id="it-bell">
         <button class="hd" onclick="sec('bell')"><span class="ic">🔔</span><span class="nm">Chuông thiền</span><span class="vl" id="v-bell"></span><span class="ch">›</span></button>
         <div class="bd">
-          <div class="hint" id="bell-hint"></div>
+          <div class="hint" id="bell-hint" style="white-space:pre-line"></div>
           <div class="row"><button class="btn p" onclick="bellTest()">🔔 Thử chuông</button></div>
         </div>
       </div>
@@ -240,7 +240,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v27 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v28 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -347,7 +347,7 @@ function refreshSet(){
   vb.className='vl'+(bm==='native'?' ok':'');
   $('bell-hint').textContent=bm==='web'
     ? 'Đang chạy trên trình duyệt: Android có thể tắt chuông khi màn hình tắt. Để chuông luôn reo, hãy dùng app BT.GG.HT (3 tiếng chuông chùa, reo cả khi tắt màn hình).'
-    : (bm==='old-apk'?'Bản app cũ — bấm Cập nhật ở thanh trên cùng để có 3 tiếng chuông chùa.':'3 tiếng chuông chùa do app reo — reo cả khi tắt màn hình hay chuyển app. Thiền lớn hơn 5 phút mới ghi kết quả.');
+    : (bm==='old-apk'?'Bản app cũ — bấm Cập nhật ở thanh trên cùng để có 3 tiếng chuông chùa.':'3 tiếng chuông chùa do app reo — reo cả khi tắt màn hình hay chuyển app. Thiền lớn hơn 5 phút mới ghi kết quả.'+bellDiag());
   $('v-pw').textContent=on?'✓ Đang bật':'Tắt'; $('v-pw').className='vl'+(on?' ok':'');
   const f=(a&&a.bkFreq)||'off';
   document.querySelectorAll('#bk-freq button').forEach(x=>x.classList.toggle('sel',x.getAttribute('data-f')===f));
@@ -384,6 +384,21 @@ function pwOff(){
   setPass('',Date.now()); syncPass(); refreshSet(); shellToast('✓ Đã tắt mật khẩu');
 }
 // Chuông thiền: APK → 3 tiếng chuông chùa native (reo cả khi tắt màn hình); Chrome → chuông trên trang (Android có thể tắt khi màn hình tắt)
+// Chẩn đoán chuông từ APK ≥1.4: quyền báo thức, thông báo, âm lượng báo thức, lần đặt/reo gần nhất
+function bellDiag(){
+  try{ const b=W('thien').TCAndroidBridge; if(!b||!b.bellInfo) return '';
+    const d=JSON.parse(b.bellInfo()); const w=[];
+    if(!d.exact) w.push('⚠ Chưa cho phép Báo thức chính xác');
+    if(!d.notif) w.push('⚠ Thông báo đang tắt');
+    if(d.vol===0) w.push('⚠ Âm lượng báo thức = 0 (app sẽ tự nâng khi reo)');
+    const t=[]; if(d.set) t.push('đặt '+d.set); if(d.alarm) t.push('báo '+d.alarm); if(d.ring) t.push('reo '+d.ring);
+    if(d.err) w.push('Lỗi: '+d.err);
+    return (w.length?'
+'+w.join('
+'):'')+(t.length?'
+Gần nhất: '+t.join(' · '):'');
+  }catch(e){ return ''; }
+}
 function bellMode(){ try{ return W('thien').__bellMode(); }catch(e){ return ''; } }
 function bellTest(){ const m=call('thien','__testBell'); shellToast('🔔 Đang phát 3 tiếng chuông thử'); }
 // Tên trong báo cáo thiền (riêng từng người)

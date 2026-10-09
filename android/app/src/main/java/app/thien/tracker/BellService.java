@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
@@ -20,14 +21,19 @@ public class BellService extends Service {
     private MediaPlayer mp;
     private PowerManager.WakeLock wl;
     private final Handler h = new Handler(Looper.getMainLooper());
+    private int restoreVol = -1;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int min = intent != null ? intent.getIntExtra("min", 0) : 0;
         Bell.ensureChannels(this);
         Notification n = buildNotif(min);
-        if (Build.VERSION.SDK_INT >= 29) startForeground(Bell.NOTIF_BELL, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-        else startForeground(Bell.NOTIF_BELL, n);
+        try {
+            if (Build.VERSION.SDK_INT >= 29) startForeground(Bell.NOTIF_BELL, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            else startForeground(Bell.NOTIF_BELL, n);
+        } catch (Exception e) {
+            Bell.log(this, "fg-err:" + e.getClass().getSimpleName()); // vẫn phát chuông bên dưới
+        }
 
         stopPlayer();
         try {
@@ -39,6 +45,12 @@ public class BellService extends Service {
             Vibrator v = getSystemService(Vibrator.class);
             long[] pat = {0, 600, 400, 600, 400, 600};
             if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(pat, -1)); else v.vibrate(pat, -1);
+        } catch (Exception ignored) { }
+        // Âm lượng BÁO THỨC quá nhỏ / bằng 0 → tạm nâng lên 2/3 để chắc chắn nghe thấy, xong trả lại
+        try {
+            AudioManager am = getSystemService(AudioManager.class);
+            int max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM), cur = am.getStreamVolume(AudioManager.STREAM_ALARM);
+            if (cur * 3 < max) { restoreVol = cur; am.setStreamVolume(AudioManager.STREAM_ALARM, Math.max(1, max * 2 / 3), 0); }
         } catch (Exception ignored) { }
         try {
             mp = new MediaPlayer();
@@ -53,7 +65,9 @@ public class BellService extends Service {
             mp.prepare();
             mp.setVolume(1f, 1f);
             mp.start();
+            Bell.log(this, "ring");
         } catch (Exception e) {
+            Bell.log(this, "err:" + e);
             finish();
             return START_NOT_STICKY;
         }
@@ -86,6 +100,10 @@ public class BellService extends Service {
             try { mp.stop(); } catch (Exception ignored) { }
             try { mp.release(); } catch (Exception ignored) { }
             mp = null;
+        }
+        if (restoreVol >= 0) {
+            try { getSystemService(AudioManager.class).setStreamVolume(AudioManager.STREAM_ALARM, restoreVol, 0); } catch (Exception ignored) { }
+            restoreVol = -1;
         }
         if (wl != null) {
             try { if (wl.isHeld()) wl.release(); } catch (Exception ignored) { }

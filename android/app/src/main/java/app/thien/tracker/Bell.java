@@ -67,6 +67,7 @@ final class Bell {
         } catch (SecurityException e) {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
         }
+        log(c, "set");
         showTimerNotif(c, min, at);
     }
 
@@ -82,6 +83,34 @@ final class Bell {
     static void ringNow(Context c) {
         Intent s = new Intent(c, BellService.class).putExtra("min", 0);
         if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(s); else c.startService(s);
+    }
+
+    /** Ghi lại sự kiện chuông gần nhất (để Cài đặt hiện chẩn đoán). */
+    static void log(Context c, String what) {
+        try {
+            String t = new java.text.SimpleDateFormat("HH:mm:ss dd/MM", java.util.Locale.US).format(new java.util.Date());
+            c.getSharedPreferences("bell", 0).edit().putString(what.startsWith("err") || what.contains("-err") || what.startsWith("svc") ? "lastErr" : "last_" + what, t + (what.contains(":") ? " " + what : "")).apply();
+        } catch (Exception ignored) { }
+    }
+
+    /** Chẩn đoán cho trang Cài đặt: quyền, âm lượng, lần reo gần nhất. */
+    static String info(Context c) {
+        StringBuilder b = new StringBuilder();
+        try {
+            AlarmManager am = c.getSystemService(AlarmManager.class);
+            boolean exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
+            boolean notif = c.getSystemService(NotificationManager.class).areNotificationsEnabled();
+            android.media.AudioManager au = c.getSystemService(android.media.AudioManager.class);
+            int v = au.getStreamVolume(android.media.AudioManager.STREAM_ALARM), mx = au.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM);
+            android.content.SharedPreferences p = c.getSharedPreferences("bell", 0);
+            b.append("{\"exact\":").append(exact).append(",\"notif\":").append(notif)
+             .append(",\"vol\":").append(v).append(",\"max\":").append(mx)
+             .append(",\"set\":\"").append(p.getString("last_set", "")).append('"')
+             .append(",\"alarm\":\"").append(p.getString("last_alarm", "")).append('"')
+             .append(",\"ring\":\"").append(p.getString("last_ring", "")).append('"')
+             .append(",\"err\":\"").append(p.getString("lastErr", "").replace("\"", "'").replace("\\", "/")).append("\"}");
+        } catch (Exception e) { return "{}"; }
+        return b.toString();
     }
 
     static void showTimerNotif(Context c, int min, long at) {

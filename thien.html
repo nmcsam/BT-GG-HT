@@ -1354,6 +1354,32 @@ function pullFromCloud(){
   }).catch(function(e){ syncErr('Lỗi tải từ web: '+(e&&e.message||e)); });
 }
 
+// ── Tải lên / Tải xuống (Cài đặt chung BT.GG.HT) ──
+// Máy có dữ liệu MỚI hơn → Tải lên: ghi đè dữ liệu máy này lên mạng, từ đó máy này tự đẩy mỗi lần ghi.
+// Máy CŨ hơn → Tải xuống: thay dữ liệu máy này bằng bản trên mạng, máy này không đẩy lên nữa.
+function uploadToCloud(code){
+  code=(code||syncCode||'').trim().toUpperCase();
+  if(!code){ toast('Nhập hoặc tạo mã trước'); return; }
+  if(!initFirebase()){ toast('⚠️ Chưa cấu hình Firebase'); return; }
+  if(dataSummary(ST).count===0){ toast('Máy này chưa có dữ liệu thiền — hãy Tải xuống'); return; }
+  syncRole='push'; try{ localStorage.setItem('thien_sync_role','push'); }catch(e){}
+  syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
+  if(syncUnsub){ syncUnsub(); syncUnsub=null; }
+  pendingConflict=null;
+  pushToCloud();
+  attachSyncListener(fbDb.collection('syncs').doc(syncCode)); updateSyncBtn();
+  toast('⬆ Đã tải dữ liệu máy này lên — mã '+syncCode);
+}
+function downloadFromCloud(code){
+  code=(code||syncCode||'').trim().toUpperCase();
+  if(!code){ toast('Nhập mã trước'); return; }
+  if(!initFirebase()){ toast('⚠️ Chưa cấu hình Firebase'); return; }
+  if(syncUnsub){ syncUnsub(); syncUnsub=null; }
+  pendingConflict=null;
+  syncRole='pull'; try{ localStorage.setItem('thien_sync_role','pull'); }catch(e){}
+  syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
+  pullFromCloud();
+}
 function fbConfigured(){return firebaseConfig.apiKey && firebaseConfig.apiKey!=='YOUR_API_KEY';}
 function initFirebase(){
   if(!fbConfigured())return false;

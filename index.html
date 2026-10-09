@@ -189,10 +189,9 @@ body.bothi #date-strip{display:block;}
       <div class="it" id="it-th">
         <button class="hd" onclick="sec('th')"><span class="ic">🧘</span><span class="nm">Đồng bộ Thiền</span><span class="vl" id="v-th"></span><span class="ch">›</span></button>
         <div class="bd">
-          <div class="hint">RIÊNG từng người — mỗi người một mã. Điện thoại ghi và đẩy lên · máy tính chỉ tải về xem.</div>
+          <div class="hint">RIÊNG từng người — mỗi người một mã. Máy nào có dữ liệu <b>mới hơn</b> → <b>Tải lên</b> (từ đó tự đẩy mỗi lần ghi). Máy nào <b>cũ hơn</b> → <b>Tải xuống</b> (lấy bản trên mạng về).</div>
           <div class="fld"><input class="in" id="th-code" maxlength="14" placeholder="Mã đồng bộ thiền"/><button class="dice" title="Tạo mã mới" onclick="genCode('th-code')">🎲</button></div>
-          <div class="seg"><button id="role-push" onclick="thRole('push')">📱 Điện thoại</button><button id="role-pull" onclick="thRole('pull')">💻 Máy tính</button></div>
-          <div class="row"><button class="btn p" onclick="thConnect()">✓ Kết nối</button><button class="btn" id="th-pull-row" onclick="thPull()">⬇ Tải về</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
+          <div class="row"><button class="btn p" onclick="thUp()">⬆ Tải lên</button><button class="btn p" onclick="thDown()">⬇ Tải xuống</button><button class="btn red" onclick="thDisconnect()">Ngắt</button></div>
           <div class="st" id="th-st"></div>
         </div>
       </div>
@@ -240,7 +239,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v28 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v29 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -330,14 +329,12 @@ function refreshSet(){
   $('bt-st').textContent=a?(a.sync?'✓ Đang đồng bộ — mã '+a.code:'Chưa kết nối'):'Đang tải…';
   $('th-st').className='st '+(b&&b.sync?'ok':'no');
   const role=b&&b.role;
-  $('th-st').textContent=b?((b.sync||(b.code&&role==='pull'))?('✓ '+(role==='pull'?'Máy tính · chỉ tải về':'Điện thoại · tự đẩy lên')+' — mã '+b.code):'Chưa kết nối'):'Đang tải…';
-  $('role-push').classList.toggle('sel',role==='push'); $('role-pull').classList.toggle('sel',role==='pull');
-  $('th-pull-row').style.display=role==='pull'?'':'none';
+  $('th-st').textContent=b?((b.sync||(b.code&&role==='pull'))?('✓ '+(role==='pull'?'Máy này: tải xuống (lấy bản trên mạng)':'Máy này: tải lên (tự đẩy mỗi lần ghi)')+' — mã '+b.code):'Chưa kết nối'):'Đang tải…';
   // Tóm tắt bên phải mỗi dòng
   const vbt=$('v-bt'), vth=$('v-th');
   vbt.textContent=a?(a.sync?'✓ '+a.code:'Chưa kết nối'):'…'; vbt.className='vl'+(a&&a.sync?' ok':'');
   const thOn=!!(b&&(b.sync||(b.code&&role==='pull')));
-  vth.textContent=b?(thOn?'✓ '+(role==='pull'?'💻 ':'📱 ')+b.code:'Chưa kết nối'):'…'; vth.className='vl'+(thOn?' ok':'');
+  vth.textContent=b?(thOn?'✓ '+(role==='pull'?'⬇ ':'⬆ ')+b.code:'Chưa kết nối'):'…'; vth.className='vl'+(thOn?' ok':'');
   const on=!!getPass();
   $('pw-st').className='st '+(on?'ok':'no'); $('pw-st').textContent=on?'Đang BẬT — app hỏi mật khẩu mỗi khi mở.':'Đang tắt — ai cũng mở được app.';
   $('pw-set').textContent=on?'Đổi mật khẩu':'Đặt mật khẩu'; $('pw-off').style.display=on?'':'none';
@@ -363,10 +360,14 @@ function genCode(id){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(
 function btConnect(){ const c=$('bt-code').value.trim().toUpperCase(); if(!c){ shellToast('Nhập hoặc tạo mã trước'); return; } call('bothi','connectSync',c,false); shellToast('Đang kết nối Bố thí…'); after(1500); after(4000); }
 function btDisconnect(){ call('bothi','disconnectSync'); after(300); }
 // Thiền
-function thRole(r){ call('thien','setSyncRole',r); after(300); }
-function thConnect(){ const c=$('th-code').value.trim().toUpperCase(); if(!c){ shellToast('Nhập hoặc tạo mã trước'); return; } call('thien','connectSync',c,false); shellToast('Đang kết nối Thiền…'); after(1500); after(4000); }
+function thCode(){ const c=$('th-code').value.trim().toUpperCase(); if(!c) shellToast('Nhập hoặc tạo mã trước'); return c; }
+function thUp(){ const c=thCode(); if(!c) return;
+  if(!confirm('⬆ TẢI LÊN\n\nDữ liệu thiền trên mạng (mã '+c+') sẽ bị THAY bằng dữ liệu của máy này.\nChỉ làm trên máy có dữ liệu MỚI hơn. Tiếp tục?')) return;
+  call('thien','uploadToCloud',c); after(1500); after(4000); }
+function thDown(){ const c=thCode(); if(!c) return;
+  if(!confirm('⬇ TẢI XUỐNG\n\nDữ liệu thiền trên máy này sẽ bị THAY bằng bản trên mạng (mã '+c+').\nChỉ làm trên máy có dữ liệu CŨ hơn. Tiếp tục?')) return;
+  call('thien','downloadFromCloud',c); after(1500); after(4000); }
 function thDisconnect(){ call('thien','disconnectSync'); after(300); }
-function thPull(){ call('thien','pullFromCloud'); after(2000); }
 // Mật khẩu (dùng hộp nhập của phần Bố thí → được đồng bộ)
 function pwSet(){
   const cur=getPass();

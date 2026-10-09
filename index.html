@@ -393,10 +393,7 @@ function bellDiag(){
     if(d.vol===0) w.push('⚠ Âm lượng báo thức = 0 (app sẽ tự nâng khi reo)');
     const t=[]; if(d.set) t.push('đặt '+d.set); if(d.alarm) t.push('báo '+d.alarm); if(d.ring) t.push('reo '+d.ring);
     if(d.err) w.push('Lỗi: '+d.err);
-    return (w.length?'
-'+w.join('
-'):'')+(t.length?'
-Gần nhất: '+t.join(' · '):'');
+    return (w.length?'\n'+w.join('\n'):'')+(t.length?'\nGần nhất: '+t.join(' · '):'');
   }catch(e){ return ''; }
 }
 function bellMode(){ try{ return W('thien').__bellMode(); }catch(e){ return ''; } }

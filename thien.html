@@ -79,7 +79,7 @@ html.embed .nav-btn.on::before{left:-14px;background:radial-gradient(circle at 0
 html.embed .nav-btn.on::after{right:-14px;background:radial-gradient(circle at 100% 0,transparent 13.5px,#f5f5f5 14px);}
 html.embed #lock-screen{display:none!important}
 #chart-pie{max-width:100%;max-height:100%}
-/* ── Màn hình ngang & rộng (máy tính, Z Fold xoay ngang): Hôm nay · Tháng · Năm cạnh nhau, mỗi cột 1/3 ── */
+/* ── Màn hình ngang & rộng (chỉ máy tính có chuột; Z Fold và điện thoại luôn 1 cột): Hôm nay · Tháng · Năm cạnh nhau, mỗi cột 1/3 ── */
 body.wide{max-width:none!important;margin:0!important;padding-left:0!important;padding-right:0!important;height:100vh;height:100dvh;overflow:hidden}
 body.wide .nav{display:none}
 body.wide .scroll{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;overflow:hidden;min-height:0}
@@ -1588,9 +1588,11 @@ function nf(n){if(n===null||n===undefined||n==='')return n;const x=Number(n);if(
 function toast(msg){const t=document.getElementById('toast-el');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200);}
 function syncErr(msg){const st=document.getElementById('sync-status');if(st){st.textContent=msg;st.style.color='#b3261e';}toast(msg);}
 
-// Ngang + đủ rộng + đủ cao: máy tính, màn hình trong Z Fold xoay ngang. Màn hình ngoài xoay ngang vẫn 1 trang.
+// Ngang + đủ rộng + đủ cao trên máy tính có chuột. Điện thoại và Z Fold (cả màn hình trong lẫn ngoài, ngang hay dọc) luôn 1 trang.
 let _wide=false;
-function isWideScreen(){ const w=window.innerWidth, h=window.innerHeight; return w>h && w>=680 && h>=440; }
+// Điện thoại / máy gập (Z Fold) / máy tính bảng: luôn 1 cột có tab, kể cả xoay ngang. Chỉ máy tính (có chuột) mới chia 3 cột.
+function isTouchDevice(){ try{ if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return true; return matchMedia('(pointer:coarse)').matches && !matchMedia('(any-pointer:fine)').matches; }catch(e){ return false; } }
+function isWideScreen(){ if(isTouchDevice()) return false; const w=window.innerWidth, h=window.innerHeight; return w>h && w>=680 && h>=440; }
 function applyWide(){
   const w=isWideScreen(), changed=w!==_wide; _wide=w;
   document.body.classList.toggle('wide',w);

@@ -220,7 +220,7 @@ html.lock-scroll .ms-dd{touch-action:pan-y;}
 .th-foot button{margin-left:5px;padding:4px 10px;border:1px solid #d6c9a6;border-radius:12px;background:#fff;color:#5C3D00;font-size:11.5px;font-weight:700;cursor:pointer;}
 .th-total{display:flex;justify-content:space-between;padding:9px 12px;background:#fdf3d7;border-top:1px solid #ded4bd;font-size:13px;font-weight:700;color:#5C3D00;}
 .th-total b{font-size:15px;font-family:Georgia,serif;}
-/* ── Màn hình ngang & rộng (máy tính, màn hình trong xoay ngang): 3 trang cạnh nhau ── */
+/* ── Màn hình ngang & rộng (chỉ máy tính có chuột; Z Fold và điện thoại luôn 1 cột): 3 trang cạnh nhau ── */
 #cols{display:block;}
 body.wide{height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 body.wide #header{position:relative;flex-shrink:0;padding:8px 16px 8px;}
@@ -1779,7 +1779,9 @@ async function requestPersist(){ try{ if(navigator.storage&&navigator.storage.pe
 let _zoom=1;
 let _wide=false;
 // Ngang + đủ rộng + đủ cao: máy tính, màn hình trong điện thoại gập xoay ngang (~840px). Màn hình ngoài xoay ngang (cao ~400px) vẫn 1 trang.
-function isWideScreen(){ const w=window.innerWidth, h=window.innerHeight; return w>h && w>=680 && h>=480; }
+// Điện thoại / máy gập (Z Fold) / máy tính bảng: luôn 1 cột có tab, kể cả xoay ngang. Chỉ máy tính (có chuột) mới chia 3 cột.
+function isTouchDevice(){ try{ if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return true; return matchMedia('(pointer:coarse)').matches && !matchMedia('(any-pointer:fine)').matches; }catch(e){ return false; } }
+function isWideScreen(){ if(isTouchDevice()) return false; const w=window.innerWidth, h=window.innerHeight; return w>h && w>=680 && h>=480; }
 // Gom 3 trang vào một khung; ở màn hình ngang & rộng thì hiện cạnh nhau, mỗi trang 1/3
 // 3 cột: chạm vào cột nào thì cột đó thành "đang chọn" (tiêu đề đổi màu như tab)
 document.addEventListener('pointerdown',function(e){

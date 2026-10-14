@@ -316,15 +316,15 @@ input[type=range]{width:100%;accent-color:var(--teal)}
         <div style="font-size:8px" id="sess2-status"></div>
       </div>
         <div class="sess-block" id="tong-card" style="flex:1 1 112px;min-width:112px;height:104px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-evenly;padding:6px 6px">
-          <div style="font-weight:800;font-size:12.5px;line-height:1.15"><span style="display:inline-block;width:17px;font-size:12.5px;text-align:center;vertical-align:-1px">⏱</span>Tổng</div>
+          <div class="tong-t" style="font-weight:800;font-size:12.5px;line-height:1.15"><span style="display:inline-block;width:17px;font-size:12.5px;text-align:center;vertical-align:-1px">⏱</span>Tổng</div>
           <div style="display:flex;align-items:stretch;margin:1px 0">
             <div style="flex:1;min-width:0">
-              <div style="font-size:8.5px;color:var(--muted)">Thời gian</div>
+              <div class="tong-sub" style="font-size:8.5px;color:var(--muted)">Thời gian</div>
               <div style="font-size:12.5px;font-weight:800;line-height:1.2"><span id="today-total" style="color:var(--teal)">0ph</span></div>
             </div>
-            <div style="width:0;border-left:1.5px solid rgba(0,0,0,.28);margin:1px 5px"></div>
+            <div class="tong-vdiv" style="width:0;border-left:1.5px solid rgba(0,0,0,.28);margin:1px 5px"></div>
             <div style="flex:1;min-width:0">
-              <div style="font-size:8.5px;color:var(--muted)">Đạt KH</div>
+              <div class="tong-sub" style="font-size:8.5px;color:var(--muted)">Đạt KH</div>
               <div style="font-size:12.5px;font-weight:800;line-height:1.2"><span id="today-pct">0%</span></div>
             </div>
           </div>
@@ -2555,6 +2555,21 @@ function renderToday(){
   const badge=document.getElementById('daily-result-badge');
   if(m1>0||m2>0){const ok=total>=goal;badge.textContent=ok?'✓ OK':'✗ NG';badge.style.background=ok?'#076d5e':'#7a1c38';badge.style.color='#fff';}
   else{badge.textContent='—';badge.style.background='var(--surface3)';badge.style.color='var(--muted)';}
+  // Ô Tổng tô màu giống ô AM/PM: đạt kế hoạch cả ngày → xanh, chưa đạt → đỏ
+  const tc=document.getElementById('tong-card');
+  if(tc){
+    const tOk=goal>0 && total>=goal;
+    tc.style.background=tOk?'linear-gradient(180deg,#0f8a6d 0%,#0a6b54 100%)':'#c0392b';
+    tc.style.borderColor=tOk?'#0a5c47':'#a93226';
+    tc.style.color='#fff';
+    tc.querySelectorAll('.tong-t').forEach(function(x){x.style.color='rgba(255,255,255,.92)';});
+    tc.querySelectorAll('.tong-sub').forEach(function(x){x.style.color='rgba(255,255,255,.85)';});
+    tc.querySelectorAll('.tong-vdiv').forEach(function(x){x.style.borderLeftColor='rgba(255,255,255,.55)';});
+    if(_tt) _tt.style.color='#fff';
+    pctEl.style.color='#fff';
+    if(m1>0||m2>0){ badge.style.background='rgba(255,255,255,.22)'; badge.style.color='#fff'; }
+    else{ badge.style.background='rgba(255,255,255,.18)'; badge.style.color='rgba(255,255,255,.85)'; }
+  }
 }
 
 function renderTimerInfo(){

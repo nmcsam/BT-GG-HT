@@ -108,6 +108,10 @@ public class MainActivity extends Activity {
         s.setUserAgentString(s.getUserAgentString() + " TCAndroid");
 
         web.addJavascriptInterface(new Bridge(), "TCAndroidBridge");
+        // Link tải file (vd. bản APK mới) → mở bằng trình duyệt để tải & cài; WebView tự nó không tải file
+        web.setDownloadListener((url, ua, cd, mime, len) -> {
+            if (url != null && url.startsWith("http")) openExternally(Uri.parse(url));
+        });
         Bell.ensureChannels(this);
         // Android 13+: xin quyền thông báo (đồng hồ đếm trên màn hình khoá + báo đủ giờ)
         if (Build.VERSION.SDK_INT >= 33

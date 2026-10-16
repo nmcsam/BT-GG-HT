@@ -1339,18 +1339,26 @@ function updateSyncRoleUI(){
     else h.textContent='Hãy chọn vai trò cho máy này: Điện thoại (tự đẩy lên) hoặc Máy tính (chỉ tải về).';
   }
 }
-function pullFromCloud(){
+function pullFromCloud(silent, hops){
   if(!syncCode){ toast('Nhập/tạo mã rồi bấm Kết nối trước'); return; }
   if(!initFirebase()){ syncErr('⚠️ Chưa cấu hình Firebase trong file index.html'); return; }
+  hops=hops||0;
   var ref=fbDb.collection('syncs').doc(syncCode);
-  toast('Đang tải dữ liệu từ web…');
+  if(!silent) toast('Đang tải dữ liệu từ web…');
   ref.get().then(function(doc){
-    if(!doc.exists){ toast('Đám mây chưa có dữ liệu (mã: '+syncCode+')'); return; }
+    // Mã cũ đã được thay bằng mã mới (máy khác Tải lên với mã mới) → tự chuyển theo, không cần gõ lại mã
+    var mv=doc.exists && doc.data().movedTo;
+    if(mv && mv!==syncCode && hops<3){
+      syncCode=mv; localStorage.setItem('thien_sync_code',syncCode);
+      toast('🔁 Mã đồng bộ đã đổi sang '+mv+' — đang tải…');
+      pullFromCloud(silent, hops+1); return;
+    }
+    if(!doc.exists){ if(!silent) toast('Đám mây chưa có dữ liệu (mã: '+syncCode+')'); updateSyncBtn(); return; }
     var r=null; try{ r=JSON.parse(doc.data().payload); }catch(e){ r=null; }
-    if(!r){ toast('Dữ liệu đám mây bị lỗi'); return; }
+    if(!r){ if(!silent) toast('Dữ liệu đám mây bị lỗi'); return; }
     applyRemote(r, doc.data().updatedAt||Date.now());
     updateSyncBtn();
-    toast('☁️ Đã tải dữ liệu mới nhất từ web về máy này');
+    if(!silent) toast('☁️ Đã tải dữ liệu mới nhất từ web về máy này');
   }).catch(function(e){ syncErr('Lỗi tải từ web: '+(e&&e.message||e)); });
 }
 
@@ -1362,8 +1370,14 @@ function uploadToCloud(code){
   if(!code){ toast('Nhập hoặc tạo mã trước'); return; }
   if(!initFirebase()){ toast('⚠️ Chưa cấu hình Firebase'); return; }
   if(dataSummary(ST).count===0){ toast('Máy này chưa có dữ liệu thiền — hãy Tải xuống'); return; }
+  var oldCode=syncCode;
   syncRole='push'; try{ localStorage.setItem('thien_sync_role','push'); }catch(e){}
   syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
+  // Đổi mã: để lại "biển chỉ đường" ở mã cũ → máy khác bấm Tải xuống với mã cũ sẽ tự sang mã mới
+  try{
+    if(oldCode && oldCode!==code) fbDb.collection('syncs').doc(oldCode).set({movedTo:code},{merge:true});
+    fbDb.collection('syncs').doc(code).set({movedTo:firebase.firestore.FieldValue.delete()},{merge:true});
+  }catch(e){}
   if(syncUnsub){ syncUnsub(); syncUnsub=null; }
   pendingConflict=null;
   pushToCloud();
@@ -1388,6 +1402,7 @@ function initFirebase(){
 }
 function initSync(){ updateSyncBtn(); try{ updateSyncRoleUI(); }catch(e){}
   if(syncCode && syncRole==='push' && typeof firebase!=='undefined' && (typeof fbConfigured!=='function' || fbConfigured())){ try{ connectSync(syncCode, true); }catch(e){} } // Điện thoại: tự kết nối & đẩy ngầm khi mở app
+  else if(syncCode && syncRole==='pull' && typeof firebase!=='undefined'){ try{ pullFromCloud(true); }catch(e){} } // Máy tính (tải xuống): mở app là tự lấy bản mới nhất
 }
 function updateSyncBtn(){
   const b=document.getElementById('sync-btn'); if(!b)return;
@@ -1436,14 +1451,7 @@ function connectSync(code,silent){
   const ref=fbDb.collection('syncs').doc(syncCode);
   // ── MÁY TÍNH (chỉ tải về): kéo dữ liệu từ web xuống, KHÔNG đẩy lên, không nghe realtime ──
   if(syncRole==='pull'){
-    ref.get().then(function(doc){
-      if(doc.exists){
-        var r=null; try{ r=JSON.parse(doc.data().payload); }catch(e){ r=null; }
-        if(r){ applyRemote(r, doc.data().updatedAt||Date.now()); if(!silent) toast('☁️ Đã tải dữ liệu từ web về (máy tính chỉ tải về)'); }
-        else if(!silent) toast('Dữ liệu đám mây bị lỗi');
-      } else if(!silent) toast('Đám mây chưa có dữ liệu (mã: '+syncCode+')');
-      updateSyncBtn(); if(!silent) closeSyncModal();
-    }).catch(function(err){ syncErr('Lỗi tải từ web: '+((err&&err.message)||err)); });
+    pullFromCloud(silent); if(!silent) closeSyncModal();
     return;
   }
   // ── ĐIỆN THOẠI (tự đẩy lên): đẩy dữ liệu máy này lên web (nếu máy trống mà web có thì tải về để không xoá nhầm) ──

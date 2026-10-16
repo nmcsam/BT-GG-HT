@@ -1388,11 +1388,17 @@ function downloadFromCloud(code){
   code=(code||syncCode||'').trim().toUpperCase();
   if(!code){ toast('Nhập mã trước'); return; }
   if(!initFirebase()){ toast('⚠️ Chưa cấu hình Firebase'); return; }
-  if(syncUnsub){ syncUnsub(); syncUnsub=null; }
-  pendingConflict=null;
-  syncRole='pull'; try{ localStorage.setItem('thien_sync_role','pull'); }catch(e){}
-  syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
-  pullFromCloud();
+  // Gõ nhầm mã (vd. 8R55… thay vì 8R5R…) → mã đó không có dữ liệu: báo rõ, GIỮ NGUYÊN mã đang dùng
+  fbDb.collection('syncs').doc(code).get().then(function(doc){
+    if(!doc.exists || !(doc.data().payload || doc.data().movedTo)){
+      try{ alert('❌ Mã '+code+' không có dữ liệu thiền trên mạng.\n\nCó thể gõ nhầm — hãy xem lại mã trên điện thoại (⚙ → Đồng bộ Thiền) và gõ lại cho đúng từng chữ.'); }catch(e){}      return;
+    }
+    if(syncUnsub){ syncUnsub(); syncUnsub=null; }
+    pendingConflict=null;
+    syncRole='pull'; try{ localStorage.setItem('thien_sync_role','pull'); }catch(e){}
+    syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
+    pullFromCloud();
+  }).catch(function(e){ syncErr('Lỗi tải từ web: '+(e&&e.message||e)); });
 }
 function fbConfigured(){return firebaseConfig.apiKey && firebaseConfig.apiKey!=='YOUR_API_KEY';}
 function initFirebase(){

@@ -1311,6 +1311,12 @@ async function pasteMonth(){
 }
 
 async function saveFileAs(fname, blob){
+  // App BT.GG.HT (APK ≥1.5): WebView không tải được file → nhờ app mở hộp "Lưu vào đâu" của Android
+  try{ if(window.TCAndroidBridge && window.TCAndroidBridge.saveFile){
+    const r=new FileReader();
+    r.onload=function(){ const s=String(r.result); window.TCAndroidBridge.saveFile(fname, blob.type||'application/octet-stream', s.slice(s.indexOf(',')+1)); };
+    r.readAsDataURL(blob); return;
+  } }catch(e){}
   if(window.showSaveFilePicker){
     try{
       const ext='.'+fname.split('.').pop();

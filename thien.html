@@ -3592,6 +3592,12 @@ function exportData(){
 
 // Lưu file bền cho mọi môi trường: APK (TWA) / PWA / trình duyệt máy tính
 async function saveFileAs(name, blob, payloadText){
+  // 0) App BT.GG.HT (APK ≥1.5): WebView không tải được file → nhờ app mở hộp "Lưu vào đâu" của Android
+  try{ if(window.TCAndroidBridge && window.TCAndroidBridge.saveFile){
+    const r=new FileReader();
+    r.onload=function(){ const s=String(r.result); window.TCAndroidBridge.saveFile(name, blob.type||'application/json', s.slice(s.indexOf(',')+1)); };
+    r.readAsDataURL(blob); return;
+  } }catch(e){}
   // 1) Cửa sổ "Lưu vào đâu" của hệ thống (Chrome máy tính + Android mới)
   if(window.showSaveFilePicker){
     try{

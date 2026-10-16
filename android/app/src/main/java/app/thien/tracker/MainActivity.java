@@ -36,6 +36,8 @@ public class MainActivity extends Activity {
 
     private static final String HOME = "https://nmcsam.github.io/BT-GG-HT/";
     private static final int REQ_FILE = 7;
+    private static final int REQ_SAVE = 8;
+    private byte[] pendingSave;
 
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
@@ -55,8 +57,27 @@ public class MainActivity extends Activity {
         /** Chẩn đoán chuông (JSON) cho trang Cài đặt. */
         @JavascriptInterface
         public String bellInfo() { return Bell.info(MainActivity.this); }
+        /** Xuất file (JSON/Excel): WebView không tải được blob → mở hộp "Lưu vào đâu" của Android. */
         @JavascriptInterface
-        public String version() { return "BT.GG.HT-android-3"; }
+        public void saveFile(String name, String mime, String base64) {
+            final byte[] bytes;
+            try { bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT); }
+            catch (Exception e) { return; }
+            runOnUiThread(() -> {
+                pendingSave = bytes;
+                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .addCategory(Intent.CATEGORY_OPENABLE)
+                        .setType(mime == null || mime.isEmpty() ? "application/octet-stream" : mime)
+                        .putExtra(Intent.EXTRA_TITLE, name);
+                try { startActivityForResult(i, REQ_SAVE); }
+                catch (Exception e) {
+                    pendingSave = null;
+                    Toast.makeText(MainActivity.this, "Không mở được hộp lưu file", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        @JavascriptInterface
+        public String version() { return "BT.GG.HT-android-4"; }
         /** Số phiên bản APK — trang so với app/version.json để tự báo "Có bản app mới". */
         @JavascriptInterface
         public int versionCode() {
@@ -185,6 +206,21 @@ public class MainActivity extends Activity {
         if (requestCode == REQ_FILE && fileCallback != null) {
             fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
             fileCallback = null;
+            return;
+        }
+        if (requestCode == REQ_SAVE) {
+            byte[] bytes = pendingSave;
+            pendingSave = null;
+            if (resultCode != RESULT_OK || data == null || data.getData() == null || bytes == null) {
+                Toast.makeText(this, "Đã hủy", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try (java.io.OutputStream os = getContentResolver().openOutputStream(data.getData(), "wt")) {
+                os.write(bytes);
+                Toast.makeText(this, "✓ Đã lưu file", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "Không lưu được: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);

@@ -1547,13 +1547,30 @@ function attachSyncListener(ref){
     toast('☁️ Đã nhận dữ liệu mới');
   },function(err){ console.error(err); syncErr('Lỗi đồng bộ: '+(err&&err.message||err)); });
 }
-function applyRemote(remoteST, updatedAt){
+// GỘP THEO NGÀY — đồng bộ không bao giờ làm MẤT ngày:
+// ngày có ở cả hai bên → lấy bản của bên ưu tiên (primary); ngày chỉ có ở một bên → giữ lại.
+function mergeThien(primary, secondary){
+  var P=(primary&&primary.data)||[], S=(secondary&&secondary.data)||[], seen={}, out=[];
+  P.forEach(function(e){ if(e&&e.date){ seen[e.date]=1; out.push(e); } });
+  S.forEach(function(e){ if(e&&e.date&&!seen[e.date]){ seen[e.date]=1; out.push(e); } });
+  out.sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+  return Object.assign({}, secondary||{}, primary||{}, {data:out});
+}
+function applyRemote(remoteST, updatedAt, replace){
+  // Gộp với dữ liệu máy này (trừ khi khôi phục bản sao lưu): ngày chỉ máy này có sẽ KHÔNG bị xoá
+  var extra=false;
+  if(!replace && ST && ST.data && ST.data.length){
+    var n0=((remoteST&&remoteST.data)||[]).length;
+    remoteST=mergeThien(remoteST, ST);
+    extra=remoteST.data.length>n0;
+  }
   // Lưới an toàn: trước khi thay dữ liệu máy này, cất một bản trong máy (giữ 5 bản gần nhất) để lấy lại được nếu thay nhầm
   try{ if(ST && ST.data && ST.data.length){ const k='thien_prev_'+new Date().toISOString().slice(0,10);
     localStorage.setItem(k, JSON.stringify(ST));
     Object.keys(localStorage).filter(x=>x.indexOf('thien_prev_')===0).sort().reverse().slice(5).forEach(x=>localStorage.removeItem(x)); } }catch(e){}
   ST=Object.assign(ST,remoteST); ST.updatedAt=updatedAt||Date.now();
   try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){}
+  if(extra && syncRole!=='pull' && syncCode) try{ queueCloudSave(); }catch(e){}
   renderAll();
   applyUserName();
   const _g1=document.getElementById('goal1-input'); if(_g1) _g1.value=getG1(calYear,calMonth);
@@ -1587,9 +1604,15 @@ function disconnectSync(){
 function pushToCloud(){
   if(syncRole==='pull')return; // máy tính: KHÔNG bao giờ đẩy lên web
   if(!syncCode||!fbDb)return;
-  ST.updatedAt=Date.now();
-  syncEcho=true;
-  fbDb.collection('syncs').doc(syncCode).set({payload:JSON.stringify(ST),updatedAt:ST.updatedAt},{merge:true}).catch(function(e){console.error(e);syncErr('Lỗi ghi đám mây: '+(e&&e.message||e));});
+  var ref=fbDb.collection('syncs').doc(syncCode);
+  // Đọc bản trên mạng trước, GỘP các ngày máy này còn thiếu vào rồi mới ghi → máy cũ không xoá được ngày của máy mới
+  ref.get().then(function(d){
+    try{ if(d.exists && d.data().payload){ var r=JSON.parse(d.data().payload); var m=mergeThien(ST, r);
+      if(m.data.length>ST.data.length){ ST.data=m.data; try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} try{ renderAll(); }catch(e){} } } }catch(e){}
+    ST.updatedAt=Date.now();
+    syncEcho=true;
+    return ref.set({payload:JSON.stringify(ST),updatedAt:ST.updatedAt},{merge:true});
+  }).catch(function(e){console.error(e);syncErr('Lỗi ghi đám mây: '+(e&&e.message||e));});
 }
 function queueCloudSave(){
   if(syncRole==='pull')return; // máy tính: không tự đẩy
@@ -3806,7 +3829,7 @@ function bkRestore(day){
     const sn=(doc.exists&&doc.data().snapshots)||{};
     if(!sn[day]){ toast('Không tìm thấy bản sao lưu'); return; }
     let st=null; try{ st=JSON.parse(sn[day]); }catch(e){ toast('Bản sao lưu bị lỗi'); return; }
-    applyRemote(st, Date.now());
+    applyRemote(st, Date.now(), true);
     pushToCloud();
     toast('✓ Đã khôi phục bản sao lưu '+day);
     closeSettingsModal();

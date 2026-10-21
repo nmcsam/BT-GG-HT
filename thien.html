@@ -1339,7 +1339,7 @@ function updateSyncRoleUI(){
     else h.textContent='Hãy chọn vai trò cho máy này: Điện thoại (tự đẩy lên) hoặc Máy tính (chỉ tải về).';
   }
 }
-function pullFromCloud(silent, hops){
+function pullFromCloud(silent, hops, done){
   if(!syncCode){ toast('Nhập/tạo mã rồi bấm Kết nối trước'); return; }
   if(!initFirebase()){ syncErr('⚠️ Chưa cấu hình Firebase trong file index.html'); return; }
   hops=hops||0;
@@ -1351,7 +1351,7 @@ function pullFromCloud(silent, hops){
     if(mv && mv!==syncCode && hops<3){
       syncCode=mv; localStorage.setItem('thien_sync_code',syncCode);
       toast('🔁 Mã đồng bộ đã đổi sang '+mv+' — đang tải…');
-      pullFromCloud(silent, hops+1); return;
+      pullFromCloud(silent, hops+1, done); return;
     }
     if(!doc.exists){ if(!silent) toast('Đám mây chưa có dữ liệu (mã: '+syncCode+')'); updateSyncBtn(); return; }
     var r=null; try{ r=JSON.parse(doc.data().payload); }catch(e){ r=null; }
@@ -1359,6 +1359,7 @@ function pullFromCloud(silent, hops){
     applyRemote(r, doc.data().updatedAt||Date.now());
     updateSyncBtn();
     if(!silent) toast('☁️ Đã tải dữ liệu mới nhất từ web về máy này');
+    if(typeof done==='function') try{ done(); }catch(e){}
   }).catch(function(e){ syncErr('Lỗi tải từ web: '+(e&&e.message||e)); });
 }
 
@@ -1384,6 +1385,7 @@ function uploadToCloud(code){
   attachSyncListener(fbDb.collection('syncs').doc(syncCode)); updateSyncBtn();
   toast('⬆ Đã tải dữ liệu máy này lên — mã '+syncCode);
 }
+function thIsPhone(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent)); }
 function downloadFromCloud(code){
   code=(code||syncCode||'').trim().toUpperCase();
   if(!code){ toast('Nhập mã trước'); return; }
@@ -1397,7 +1399,12 @@ function downloadFromCloud(code){
     pendingConflict=null;
     syncRole='pull'; try{ localStorage.setItem('thien_sync_role','pull'); }catch(e){}
     syncCode=code; localStorage.setItem('thien_sync_code',syncCode);
-    pullFromCloud();
+    // Điện thoại (máy ghi thiền): lấy dữ liệu về xong thì tiếp tục TỰ ĐẨY LÊN mỗi lần ghi — không bị kẹt ở chế độ chỉ tải xuống
+    pullFromCloud(false, 0, function(){
+      if(!thIsPhone()) return;
+      syncRole='push'; try{ localStorage.setItem('thien_sync_role','push'); }catch(e){}
+      attachSyncListener(fbDb.collection('syncs').doc(syncCode)); updateSyncBtn();
+    });
   }).catch(function(e){ syncErr('Lỗi tải từ web: '+(e&&e.message||e)); });
 }
 function fbConfigured(){return firebaseConfig.apiKey && firebaseConfig.apiKey!=='YOUR_API_KEY';}
@@ -1408,7 +1415,7 @@ function initFirebase(){
 }
 function initSync(){ updateSyncBtn(); try{ updateSyncRoleUI(); }catch(e){}
   if(syncCode && syncRole==='push' && typeof firebase!=='undefined' && (typeof fbConfigured!=='function' || fbConfigured())){ try{ connectSync(syncCode, true); }catch(e){} } // Điện thoại: tự kết nối & đẩy ngầm khi mở app
-  else if(syncCode && syncRole==='pull' && typeof firebase!=='undefined'){ try{ pullFromCloud(true); }catch(e){} } // Máy tính (tải xuống): mở app là tự lấy bản mới nhất
+  else if(syncCode && syncRole==='pull' && !thIsPhone() && typeof firebase!=='undefined' && initFirebase()){ try{ fbDb.collection('syncs').doc(syncCode).get().then(function(d){ var r=null; try{ r=d.exists&&d.data().payload?JSON.parse(d.data().payload):null; }catch(e){} if(d.exists && d.data().movedTo){ pullFromCloud(true); return; } if(r && (r.data||[]).length>=ST.data.length) applyRemote(r, d.data().updatedAt||Date.now()); }).catch(function(){}); }catch(e){} } // Máy tính (tải xuống): mở app là tự lấy bản mới nhất
 }
 function updateSyncBtn(){
   const b=document.getElementById('sync-btn'); if(!b)return;
@@ -1541,6 +1548,10 @@ function attachSyncListener(ref){
   },function(err){ console.error(err); syncErr('Lỗi đồng bộ: '+(err&&err.message||err)); });
 }
 function applyRemote(remoteST, updatedAt){
+  // Lưới an toàn: trước khi thay dữ liệu máy này, cất một bản trong máy (giữ 5 bản gần nhất) để lấy lại được nếu thay nhầm
+  try{ if(ST && ST.data && ST.data.length){ const k='thien_prev_'+new Date().toISOString().slice(0,10);
+    localStorage.setItem(k, JSON.stringify(ST));
+    Object.keys(localStorage).filter(x=>x.indexOf('thien_prev_')===0).sort().reverse().slice(5).forEach(x=>localStorage.removeItem(x)); } }catch(e){}
   ST=Object.assign(ST,remoteST); ST.updatedAt=updatedAt||Date.now();
   try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){}
   renderAll();

@@ -143,6 +143,40 @@ body.bothi #date-strip{display:block;}
 .bk-item .btn{flex:none;padding:5px 10px;}
 .bk-h{font-size:12px;font-weight:800;color:var(--teal);margin-top:8px;}
 #set .foot{text-align:center;font-size:11px;color:#9aa9a6;margin-top:8px;}
+
+/* ═══ Tab lớn ở ĐÁY màn hình (điện thoại / máy tính bảng) — tiêu đề + ⚙ giữ nguyên trên đỉnh; bỏ dòng ngày tháng ═══ */
+#top{grid-template-areas:"bar set"!important;grid-template-columns:auto auto!important;justify-content:center!important;row-gap:0!important;padding-bottom:10px!important;box-shadow:0 3px 12px rgba(0,0,0,.25)!important;}
+@media (max-width:560px){ #top{grid-template-columns:1fr auto!important;justify-content:stretch!important;} }
+#bar,#set-btn{margin-bottom:0!important;}
+#date-strip{display:none!important;}
+#side{order:9;flex-shrink:0;position:relative;z-index:2;background:linear-gradient(135deg,#0b3d35,#076d5e 60%,#0e7f6e);padding:0 10px calc(8px + env(safe-area-inset-bottom));}
+#side .brand{display:none;}
+#side #menu{display:flex;align-items:flex-start;gap:6px;width:100%;max-width:640px;margin:0 auto;}
+/* Thẻ hồ sơ lật ngược: miệng thẻ quay LÊN, tab đang chọn nối liền với nội dung phía trên */
+#side #menu button{margin:0;padding:9px 6px 8px;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,.16);border-top:none;background:linear-gradient(0deg,#0f5e52 0%,#073d35 100%);color:#a9d8cd;box-shadow:inset 0 -1px 0 rgba(255,255,255,.12);}
+#side #menu button.on{position:relative;z-index:3;margin-top:-2px;padding:13px 6px 12px;border:none;border-radius:0 0 14px 14px;background:linear-gradient(0deg,#a98bdc 0%,#c7b4ea 45%,#e0d5f4 100%);color:#3c2166;box-shadow:0 3px 8px rgba(0,0,0,.25);}
+#side #menu button.on::before,#side #menu button.on::after{content:'';position:absolute;top:2px;bottom:auto;width:14px;height:14px;pointer-events:none;}
+#side #menu button.on::before{left:-14px;background:radial-gradient(circle at 0 100%,transparent 13.5px,#e0d5f4 14px);}
+#side #menu button.on::after{right:-14px;background:radial-gradient(circle at 100% 100%,transparent 13.5px,#e0d5f4 14px);}
+#toast{bottom:calc(84px + env(safe-area-inset-bottom));}
+
+/* ═══ Máy tính (có chuột): thanh bên TRÁI như app Pháp học ═══ */
+@media (hover:hover) and (pointer:fine) and (min-width:900px){
+  body{display:grid;grid-template-columns:232px 1fr;grid-template-rows:auto auto 1fr;}
+  #top{grid-column:2;grid-row:1;}
+  #app-banner{grid-column:2;grid-row:2;}
+  #frames{grid-column:2;grid-row:3;}
+  #side{grid-column:1;grid-row:1 / span 3;display:flex;flex-direction:column;gap:18px;padding:22px 12px;background:#2b1f5c;box-shadow:2px 0 10px rgba(0,0,0,.18);}
+  #side .brand{display:flex;align-items:center;gap:10px;padding:0 6px;}
+  #side .brand img{width:38px;height:38px;border-radius:10px;}
+  #side .brand span{font-family:'Noto Serif','Times New Roman',Times,serif;font-weight:800;font-size:19px;color:#fde68a;letter-spacing:.03em;}
+  #side #menu{flex-direction:column;align-items:stretch;gap:6px;max-width:none;margin:0;}
+  #side #menu button,#side #menu button.on{flex:none;justify-content:flex-start;gap:10px;margin:0;padding:12px 14px;border:none;border-radius:10px;background:transparent;color:#ece6ff;font-size:15px;font-weight:800;box-shadow:none;white-space:normal;text-align:left;}
+  #side #menu button:hover{background:rgba(255,255,255,.08);}
+  #side #menu button.on{background:#7e5bd0;color:#ffd166;}
+  #side #menu button.on::before,#side #menu button.on::after{content:none;}
+  #toast{bottom:28px;}
+}
 </style>
 </head>
 <body>
@@ -159,10 +193,6 @@ body.bothi #date-strip{display:block;}
     <div id="title" aria-label="Bố thí, rồi Giữ giới, rồi Hành thiền">BỐ THÍ<svg class="arr" viewBox="0 0 20 14" aria-hidden="true"><path d="M3 2l5 5-5 5M11 2l5 5-5 5"/></svg>GIỮ GIỚI<svg class="arr" viewBox="0 0 20 14" aria-hidden="true"><path d="M3 2l5 5-5 5M11 2l5 5-5 5"/></svg>HÀNH THIỀN</div>
   </div>
   <button id="set-btn" onclick="openSet()" title="Cài đặt"><span class="g">⚙</span><span class="t"> Cài đặt</span></button>
-  <div id="menu">
-    <button id="m-bothi" onclick="go('bothi')"><span class="ic">🪷</span>Bố thí</button>
-    <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
-  </div>
 </div>
 <div id="app-banner"><span id="ab-text"></span><a id="ab-go" href="https://nmcsam.github.io/BT-GG-HT/app/BT.GG.HT.apk" target="_top" rel="noopener">Cài app</a><button id="ab-x" onclick="abClose()" aria-label="Đóng">✕</button></div>
 <div id="date-strip"></div>
@@ -170,6 +200,14 @@ body.bothi #date-strip{display:block;}
   <iframe id="f-bothi" title="Bố thí" src="bothi.html"></iframe>
   <iframe id="f-thien" title="Giữ giới - Hành thiền" src="thien.html" allow="autoplay; wake-lock; screen-wake-lock"></iframe>
 </div>
+<!-- Tab lớn: điện thoại/máy tính bảng = thanh ở ĐÁY màn hình; máy tính (có chuột) = thanh bên TRÁI -->
+<nav id="side">
+  <div class="brand"><img src="icon-med2-192.png" alt=""/><span>BT.GG.HT</span></div>
+  <div id="menu">
+    <button id="m-bothi" onclick="go('bothi')"><span class="ic">🪷</span>Bố thí</button>
+    <button id="m-thien" onclick="go('thien')"><span class="ic">🧘</span>Giữ giới - Hành thiền</button>
+  </div>
+</nav>
 
 <div id="set" onclick="if(event.target===this)closeSet()">
   <div class="box">
@@ -239,7 +277,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v34 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v35 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>

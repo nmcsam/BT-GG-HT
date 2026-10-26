@@ -159,6 +159,10 @@ body.bothi #date-strip{display:block;}
 #side #menu button.on::before{left:-14px;background:radial-gradient(circle at 0 100%,transparent 13.5px,#e0d5f4 14px);}
 #side #menu button.on::after{right:-14px;background:radial-gradient(circle at 100% 100%,transparent 13.5px,#e0d5f4 14px);}
 #toast{bottom:calc(84px + env(safe-area-inset-bottom));}
+/* Không còn đường mờ chỗ 2 tab chồng nhau: tab không chọn bỏ viền + bóng; tab chọn chỉ đổ bóng xuống dưới, không lan sang bên */
+#side #menu{gap:16px!important;}
+#side #menu button{border:none!important;box-shadow:none!important;}
+#side #menu button.on{box-shadow:0 5px 5px -3px rgba(0,0,0,.28)!important;}
 
 /* ═══ Máy tính (có chuột): thanh bên TRÁI như app Pháp học ═══ */
 @media (hover:hover) and (pointer:fine) and (min-width:900px){
@@ -170,7 +174,7 @@ body.bothi #date-strip{display:block;}
   #side .brand{display:flex;align-items:center;gap:10px;padding:0 6px;}
   #side .brand img{width:38px;height:38px;border-radius:10px;}
   #side .brand span{font-family:'Noto Serif','Times New Roman',Times,serif;font-weight:800;font-size:19px;color:#fde68a;letter-spacing:.03em;}
-  #side #menu{flex-direction:column;align-items:stretch;gap:6px;max-width:none;margin:0;}
+  #side #menu{flex-direction:column;align-items:stretch;gap:6px!important;max-width:none;margin:0;}
   #side #menu button,#side #menu button.on{flex:none;justify-content:flex-start;gap:10px;margin:0;padding:12px 14px;border:none;border-radius:10px;background:transparent;color:#ece6ff;font-size:15px;font-weight:800;box-shadow:none;white-space:normal;text-align:left;}
   #side #menu button:hover{background:rgba(255,255,255,.08);}
   #side #menu button.on{background:#7e5bd0;color:#ffd166;}
@@ -277,7 +281,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v35 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v36 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>

@@ -215,6 +215,10 @@ html.embed .nav-btn.on::after{background:radial-gradient(circle at 100% 100%,tra
 html.embed .nav{order:9;position:sticky;bottom:0;z-index:50;}
 html.embed .app-date{display:none!important;}
 html.embed .hdr:not(:has(#streak-el:not([style*="none"]))){display:none!important;}
+/* Tab nhỏ cao hơn cho dễ chạm; bỏ bóng/viền mờ giữa các tab */
+html.embed .nav{gap:16px!important;}
+html.embed .nav-btn{padding:12px 0 11px!important;font-size:13.5px!important;box-shadow:none!important;}
+html.embed .nav-btn.on{padding:16px 0 15px!important;font-size:15px!important;box-shadow:0 5px 5px -3px rgba(0,0,0,.18)!important;}
 </style>
 </head>
 <body>

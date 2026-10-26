@@ -165,6 +165,15 @@ body.bothi #date-strip{display:block;}
 #side #menu button.on{box-shadow:0 5px 5px -3px rgba(0,0,0,.28)!important;}
 
 /* ═══ Máy tính (có chuột): thanh bên TRÁI như app Pháp học ═══ */
+/* ═══ Tab lớn v3: hai tab sát nhau, khe chỉ 1 nét (2px); không góc lõm, không bóng → không còn lấn màu ═══ */
+@media (hover:none),(pointer:coarse),(max-width:899px){
+#side{padding:0 0 env(safe-area-inset-bottom)!important;background:#0b3d35!important;}
+#side #menu{gap:2px!important;max-width:none!important;}
+#side #menu button,#side #menu button.on{margin:0!important;border:none!important;box-shadow:none!important;}
+#side #menu button{padding:12px 6px 13px!important;border-radius:0 0 12px 12px!important;background:#0f5a4f!important;color:#a9d8cd!important;}
+#side #menu button.on{padding:12px 6px 13px!important;border-radius:0 0 12px 12px!important;background:linear-gradient(180deg,#e0d5f4 0%,#d3c3ef 55%,#c1abe8 100%)!important;color:#3c2166!important;}
+#side #menu button.on::before,#side #menu button.on::after{content:none!important;display:none!important;}
+}
 @media (hover:hover) and (pointer:fine) and (min-width:900px){
   body{display:grid;grid-template-columns:232px 1fr;grid-template-rows:auto auto 1fr;}
   #top{grid-column:2;grid-row:1;}
@@ -281,7 +290,7 @@ body.bothi #date-strip{display:block;}
       </div>
 
     </div>
-    <div class="foot" id="ver">BT.GG.HT v36 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
+    <div class="foot" id="ver">BT.GG.HT v37 · 🪷 Bố thí: chung cả nhà · 🧘 Thiền: riêng từng người</div>
   </div>
 </div>
 <div id="toast"></div>

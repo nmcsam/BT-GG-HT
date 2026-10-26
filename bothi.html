@@ -389,6 +389,12 @@ html.embed #cd-toast{bottom:84px;}
 html.embed #tabs{gap:16px!important;}
 html.embed #tabs button{padding:12px 0 11px!important;font-size:13.5px!important;box-shadow:none!important;}
 html.embed #tabs button.active{padding:16px 0 15px!important;font-size:15px!important;box-shadow:0 5px 5px -3px rgba(0,0,0,.18)!important;}
+
+/* ═══ Tab nhỏ v3: khe giữa các tab chỉ 1 nét (2px), không góc lõm (hết lấn màu), chiều cao vừa phải ═══ */
+html.embed #tabs{gap:2px!important;padding:0 8px 6px!important;}
+html.embed #tabs button{padding:var(--tpi,9px) 0 var(--tpi2,8px)!important;border-radius:0 0 10px 10px!important;}
+html.embed #tabs button.active{padding:var(--tpa,13px) 0 var(--tpa2,11px)!important;border-radius:0 0 12px 12px!important;}
+html.embed #tabs button.active::before,html.embed #tabs button.active::after{content:none!important;display:none!important;}
 </style>
 </head>
 <body>
